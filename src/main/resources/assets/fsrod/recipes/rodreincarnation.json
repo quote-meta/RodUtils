@@ -20,7 +20,7 @@
             "type": "forge:ore_dict",
             "ore": "ingotGold"
         },
-        "E": {
+        "S": {
             "item": "minecraft:nether_star"
         }
     }
