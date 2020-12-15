@@ -2,13 +2,13 @@
 {
   "modid": "fsrod",
   "name": "RodUtils",
-  "description": "GUEEEEEEEEEEEEEEEEE.",
+  "description": "Mod that adding useful rods",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
-  "authorList": ["quote"],
-  "credits": "The Forge and FML guys, for making this example",
+  "authorList": ["quote", "ocosose915"],
+  "credits": "quote (code, models, textures), ocosose915 (code)",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []

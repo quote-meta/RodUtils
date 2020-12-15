@@ -14,7 +14,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = "${mod_version}"
+version = "${mc_version}"+"-"+"${sub_version}"
 group = 'quote.fs' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "${mod_name}"
 
@@ -84,11 +84,11 @@ jar {
     manifest {
         attributes([
             "Specification-Title": "${mod_name}",
-            "Specification-Vendor": "examplemodsareus",
+            "Specification-Vendor": "${mod_name}",
             "Specification-Version": "1", // We are version 1 of ourselves
             "Implementation-Title": project.name,
-            "Implementation-Version": "${mod_version}",
-            "Implementation-Vendor" :"examplemodsareus",
+            "Implementation-Version": project.name,
+            "Implementation-Vendor" :"${mod_name}",
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
@@ -116,5 +116,20 @@ publishing {
 sourceSets {
     main {
         output.resourcesDir = output.classesDir
+    }
+}
+
+processResources {
+    inputs.property "version", "${sub_version}"
+    inputs.property "mcversion", "${mc_version}"
+
+    from(sourceSets.main.resources.srcDirs) {
+        include "mcmod.info"
+                
+        expand "version": "${sub_version}", "mcversion": "${mc_version}"
+    }
+        
+    from(sourceSets.main.resources.srcDirs) {
+        exclude "mcmod.info"
     }
 }
