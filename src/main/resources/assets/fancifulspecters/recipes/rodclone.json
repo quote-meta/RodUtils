@@ -1,0 +1,29 @@
+{
+    "result": {
+        "item": "fancifulspecters:rodClone",
+        "data": 0
+    },
+    "pattern": [
+        " DE",
+        "PGD",
+        "GP "
+    ],
+    "type": "forge:ore_shaped",
+    "key": {
+        "P": {
+            "item": "minecraft:ender_pearl"
+        },
+        "D": {
+            "type": "forge:ore_dict",
+            "ore": "gemDiamond"
+        },
+        "G": {
+            "type": "forge:ore_dict",
+            "ore": "ingotGold"
+        },
+        "E": {
+            "type": "forge:ore_dict",
+            "ore": "gemEmerald"
+        }
+    }
+}

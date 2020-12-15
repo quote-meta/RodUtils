@@ -1,0 +1,48 @@
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
+
+# vscode
+.vscode
+
+# gradle
+build
+.gradle
+
+# other
+eclipse
+run
+
+# Files from Forge MDK
+forge*changelog.txt
+
+# old file or directory
+*_old
+
+#private
+priv.gradle
+
+#reference
+reference/
+
+#tabula env
+tabula/
+!tabula/mods/tabula/
+forge-1710-1558/resource.txt
+
+#api
+src/api
+
+#lib
+libs
