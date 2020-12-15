@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/handheld_rod",
   "textures": {
-    "layer0": "fancifulspecters:items/rod_clone"
+    "layer0": "fsrod:items/rod_clone"
   }
 }

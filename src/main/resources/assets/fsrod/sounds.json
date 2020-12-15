@@ -2,7 +2,7 @@
   "rod.success":{
     "category":"player",
     "sounds":[
-      "fancifulspecters:item/340159__flechabr__magic-click"
+      "fsrod:item/340159__flechabr__magic-click"
     ]
   }
 }
