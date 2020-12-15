@@ -2,6 +2,10 @@ item.rodClone0.name=Rod of Clone
 item.rodClone1.name=Rod of Transfer
 item.rodReincarnation.name=Rod of Reincarnation
 
+item.rodReincarnation.info=If you could be reincarnated without losing everything...?
+item.rodReincarnation.info.nofilename=§aI have to hold it in my hand and mutter something...
+item.rodReincarnation.info.filename=Bound by: %1$s
+
 fs.message.rodClone.use.reset=Reset the source range
 fs.message.rodClone.warning.rangesInterfere=The Two ranges interfere
 fs.message.rodClone.warning.rangeTooLarge=The range is too large (upper size: %1$d)
