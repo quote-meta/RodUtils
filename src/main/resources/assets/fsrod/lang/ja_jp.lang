@@ -1,6 +1,10 @@
 item.rodClone0.name=コピペの杖
 item.rodClone1.name=引っ越しの杖
 
+item.rodReincarnation.info=全てを失うことなく転生できたら・・・？
+item.rodReincarnation.info.nofilename=§a手に持って何かを呟かなければ・・・
+item.rodReincarnation.info.filename=%1$sに紐づけられている
+
 fs.message.rodClone.use.reset=対象範囲をリセットしました
 fs.message.rodClone.warning.rangesInterfere=2つの範囲が被っています
 fs.message.rodClone.warning.rangeTooLarge=範囲が大きすぎます（上限サイズ：%1$d）
