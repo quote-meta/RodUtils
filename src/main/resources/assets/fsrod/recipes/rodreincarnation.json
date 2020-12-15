@@ -1,0 +1,27 @@
+{
+    "result": {
+        "item": "fancifulspecters:rodrReincarnation"
+    },
+    "pattern": [
+        " DS",
+        "PGD",
+        "GP "
+    ],
+    "type": "forge:ore_shaped",
+    "key": {
+        "P": {
+            "item": "minecraft:ender_pearl"
+        },
+        "D": {
+            "type": "forge:ore_dict",
+            "ore": "gemDiamond"
+        },
+        "G": {
+            "type": "forge:ore_dict",
+            "ore": "ingotGold"
+        },
+        "E": {
+            "item": "minecraft:nether_star"
+        }
+    }
+}

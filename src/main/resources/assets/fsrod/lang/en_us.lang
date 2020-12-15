@@ -1,0 +1,18 @@
+item.rodClone0.name=Rod of Clone
+item.rodClone1.name=Rod of Transfer
+item.rodReincarnation.name=Rod of Reincarnation
+
+fs.message.rodClone.use.reset=Reset the source range
+fs.message.rodClone.warning.rangesInterfere=The Two ranges interfere
+fs.message.rodClone.warning.rangeTooLarge=The range is too large (upper size: %1$d)
+
+fs.message.rodReincarnation.use.reset=Reset the source range
+fs.message.rodReincarnation.use.save.success=I've bound this space to my soul...
+fs.message.rodReincarnation.use.save.failed=I couldn't bind the space to my soul
+fs.message.rodReincarnation.use.load.success=A soul-bound space inhabited the wand
+fs.message.rodReincarnation.use.load.failed=I couldn't get the wand to hold the space
+fs.message.rodReincarnation.use.build.failed=I couldn't call up the space
+fs.message.rodReincarnation.warning.rangeTooLarge=The range is too large (upper size: %1$d)
+fs.message.rodReincarnation.warning.noFileName=File name is not set
+fs.message.rodReincarnation.warning.clickToSave=Use the rod on the starting block to save
+fs.message.rodReincarnation.warning.invalidFileName=File name is invalid

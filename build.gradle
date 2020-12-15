@@ -57,33 +57,6 @@ minecraft {
     }
 }
 
-repositories {
-
-    maven {
-        // JEI files
-        // https when
-        url = "http://dvs1.progwml6.com/files/maven"
-    }
-
-    maven {
-        // CraftTweaker
-        name 'jared maven'
-        url "https://maven.blamejared.com/"
-    }
-
-    maven {
-        //Baubles
-        name 'thiakil'
-        url 'https://maven.thiakil.com'
-    }
-
-    maven {
-        // CTM
-        url 'https://maven.tterrag.com'
-    }
-
-}
-
 dependencies {
     def mc_version = "1.12"
     def jei_mc_version = "1.12.2"
