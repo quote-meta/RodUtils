@@ -1,0 +1,6 @@
+{
+    "parent": "block/cube_all",
+    "textures": {
+        "all": "fsrod:blocks/measuring_block_8"
+    }
+}

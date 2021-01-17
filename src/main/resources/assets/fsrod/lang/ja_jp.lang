@@ -1,5 +1,18 @@
+tile.measuringBlock0.name=測定ブロック: 0
+tile.measuringBlock1.name=測定ブロック: 1
+tile.measuringBlock2.name=測定ブロック: 2
+tile.measuringBlock3.name=測定ブロック: 3
+tile.measuringBlock4.name=測定ブロック: 4
+tile.measuringBlock5.name=測定ブロック: 5
+tile.measuringBlock6.name=測定ブロック: 6
+tile.measuringBlock7.name=測定ブロック: 7
+tile.measuringBlock8.name=測定ブロック: 8
+tile.measuringBlock9.name=測定ブロック: 9
+tile.measuringBlock10.name=測定ブロック: Void
+
 item.rodClone0.name=コピペの杖
 item.rodClone1.name=引っ越しの杖
+item.rodMeasurement.name=測定の杖
 
 item.rodReincarnation.info=全てを失うことなく転生できたら・・・？
 item.rodReincarnation.info.nofilename=§a手に持って何かを呟かなければ・・・
