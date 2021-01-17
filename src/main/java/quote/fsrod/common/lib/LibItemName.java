@@ -6,4 +6,5 @@ public class LibItemName {
 
     public static final String ROD_CLONE = PREFIX_ITEM + "rodClone";
     public static final String ROD_REINCARNATION = PREFIX_ITEM + "rodReincarnation";
+    public static final String ROD_MEASUREMENT = PREFIX_ITEM + "rodMeasurement";
 }

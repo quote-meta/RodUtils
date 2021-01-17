@@ -1,20 +1,21 @@
 package quote.fsrod.client.core.handler;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import quote.fsrod.client.core.helper.RodCloneHelper;
 import quote.fsrod.client.core.helper.RodReincarnationHelper;
 import quote.fsrod.common.RodUtils;
@@ -22,7 +23,7 @@ import quote.fsrod.common.item.rod.ItemRodClone;
 import quote.fsrod.common.item.rod.ItemRodReincarnation;
 import quote.fsrod.common.item.utils.IItemHasSplitNBTList;
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class ModRenderWorldHandler {
 
     @SubscribeEvent
@@ -31,7 +32,7 @@ public class ModRenderWorldHandler {
     }
 
     private void drawFakeBlocks(RenderWorldLastEvent event){
-        EntityPlayer player = RodUtils.proxy.getEntityPlayerInstance();
+        PlayerEntity player = RodUtils.proxy.getEntityPlayerInstance();
         ItemStack stackMainHand = player.getHeldItemMainhand();
         float partialTicks = event.getPartialTicks();
         if(ItemRodClone.isRodClone(stackMainHand) || ItemRodClone.isRodTransfer(stackMainHand)){
@@ -42,11 +43,11 @@ public class ModRenderWorldHandler {
             BlockPos blockPosEnd = RodCloneHelper.getBlockPosEnd(stackMainHand);
             BlockPos blockPosScheduled = RodCloneHelper.getBlockPosScheduled(stackMainHand);
 
-            if(dimension != null && dimension.equals(player.dimension) && blockPosNear != null){
+            if(dimension != null && dimension.equals(player.dimension.getId()) && blockPosNear != null){
                 if(blockPosEnd != null){
                     AxisAlignedBB aabbDst = null;
                     if(blockPosScheduled != null){
-                        EnumFacing facing = RodCloneHelper.getFacingScheduled(stackMainHand);
+                        Direction facing = RodCloneHelper.getFacingScheduled(stackMainHand);
                         aabbDst = RodCloneHelper.getScheduledAABB(blockPosNear, blockPosEnd, facing, blockPosScheduled);
                         renderFakeBlockFX(blockPosScheduled);
                     }
@@ -77,12 +78,12 @@ public class ModRenderWorldHandler {
             String fileName = RodReincarnationHelper.getFileName(stackMainHand);
 
             if(!fileName.isEmpty()){
-                if(stackMainHand.getTagCompound().hasKey(ItemRodReincarnation.NBT_DATA) && !stackMainHand.getTagCompound().hasKey(IItemHasSplitNBTList.NBT_SPLIT)){
+                if(stackMainHand.getTag().contains(ItemRodReincarnation.NBT_DATA) && !stackMainHand.getTag().contains(IItemHasSplitNBTList.NBT_SPLIT)){
                     // load mode
                     if(blockPosScheduled != null){
                         BlockPos blockPosData = RodReincarnationHelper.getBlockPosData(stackMainHand);
                         if(blockPosData != null){
-                            EnumFacing facing = RodReincarnationHelper.getFacingScheduled(stackMainHand);
+                            Direction facing = RodReincarnationHelper.getFacingScheduled(stackMainHand);
                             AxisAlignedBB aabbDst = RodReincarnationHelper.getScheduledAABB(blockPosData, facing, blockPosScheduled);
                             renderFakeBlockFX(blockPosScheduled);
                             renderFakeFrameFX(aabbDst);
@@ -112,8 +113,8 @@ public class ModRenderWorldHandler {
 
     private void renderFakeBlockFX(BlockPos pos){
         GlStateManager.pushMatrix();
-        GlStateManager.disableTexture2D();
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.disableTexture();
+        GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.depthMask(false);
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE); //add
@@ -126,7 +127,7 @@ public class ModRenderWorldHandler {
         double interpPosZ = TileEntityRendererDispatcher.staticPlayerZ;
         drawFakeBlockFX(tessellator, buffer, pos, interpPosX, interpPosY, interpPosZ);
 
-        GlStateManager.enableTexture2D();
+        GlStateManager.enableTexture();
         GlStateManager.depthMask(true);
         GlStateManager.disableBlend();
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
@@ -136,8 +137,8 @@ public class ModRenderWorldHandler {
 
     private void renderFakeFrameFX(AxisAlignedBB aabb){
         GlStateManager.pushMatrix();
-        GlStateManager.disableTexture2D();
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.disableTexture();
+        GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.depthMask(false);
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE); //add
@@ -152,7 +153,7 @@ public class ModRenderWorldHandler {
         Vec3d posEnd = new Vec3d(aabb.maxX, aabb.maxY, aabb.maxZ);
         drawBoxFrameFX(tessellator, buffer, posNear, posEnd, interpPosX, interpPosY, interpPosZ);
 
-        GlStateManager.enableTexture2D();
+        GlStateManager.enableTexture();
         GlStateManager.depthMask(true);
         GlStateManager.disableBlend();
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);

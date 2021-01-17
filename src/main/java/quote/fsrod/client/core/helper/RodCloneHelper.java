@@ -6,29 +6,34 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.RayTraceContext.BlockMode;
+import net.minecraft.util.math.RayTraceContext.FluidMode;
+import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.MouseEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.InputEvent.MouseInputEvent;
+import net.minecraftforge.client.event.InputEvent.MouseScrollEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import quote.fsrod.common.RodUtils;
 import quote.fsrod.common.core.handler.ConfigHandler;
 import quote.fsrod.common.core.network.ModPacketHandler;
@@ -43,28 +48,28 @@ public class RodCloneHelper {
 
     private RodCloneHelper(){}
 
-    @SideOnly(Side.CLIENT)
-    public static void onMouseEvent(MouseEvent event, ItemStack stack, EntityPlayer player){
-        if (event.getDwheel() != 0 && player.isSneaking()){
-            NBTTagCompound nbt = ModUtils.getTagThoughAbsent(stack);
+    @OnlyIn(Dist.CLIENT)
+    public static void onMouseEvent(MouseScrollEvent event, ItemStack stack, PlayerEntity player){
+        if (event.getScrollDelta() != 0 && player.isSneaking()){
+            CompoundNBT nbt = stack.getOrCreateTag();
             if(!nbt.hasUniqueId(IItemHasUUID.NBT_UUID)) return;
             UUID uuid = IItemHasUUID.getUUID(stack);
 
-            int oldReach = nbt.getInteger(ItemRodClone.NBT_REACH_DISTANCE);
-            int newReach = MathHelper.clamp(oldReach + event.getDwheel() / 120, 2, 10);
-            nbt.setInteger(ItemRodClone.NBT_REACH_DISTANCE, newReach);
+            int oldReach = nbt.getInt(ItemRodClone.NBT_REACH_DISTANCE);
+            int newReach = (int)MathHelper.clamp(oldReach + event.getScrollDelta() / 120, 2, 10);
+            nbt.putInt(ItemRodClone.NBT_REACH_DISTANCE, newReach);
 
             ModPacketHandler.INSTANCE.sendToServer(new CPacketItemUpdateNBT(nbt, uuid, CPacketItemUpdateNBT.Operation.ADD));
             event.setCanceled(true);
         }
     }
 
-    @SideOnly(Side.CLIENT)
-    public static void onRightClickTargetBlock(BlockPos blockPos, ItemStack stack, EntityPlayer player){
-        NBTTagCompound tag = ModUtils.getTagThoughAbsent(stack);
+    @OnlyIn(Dist.CLIENT)
+    public static void onRightClickTargetBlock(BlockPos blockPos, ItemStack stack, PlayerEntity player){
+        CompoundNBT tag = stack.getOrCreateTag();
 
         Integer dimension = RodCloneHelper.getDimension(stack);
-        if(dimension == null || !dimension.equals(player.dimension)){
+        if(dimension == null || !dimension.equals(player.dimension.getId())){
             // reset all settings
             sendRemoveNBTTagToServer(stack, ItemRodClone.NBT_DIMENSION);
             sendRemoveNBTTagToServer(stack, ItemRodClone.NBT_POINT_SCHEDULED_FACING);
@@ -73,19 +78,19 @@ public class RodCloneHelper {
             sendRemoveNBTTagToServer(stack, ItemRodClone.NBT_POINT_SCHEDULED);
         }
 
-        NBTTagCompound blockPosNearNBT = tag.getCompoundTag(ItemRodClone.NBT_POINT_NEAR);
-        if(blockPosNearNBT.hasNoTags()){
+        CompoundNBT blockPosNearNBT = tag.getCompound(ItemRodClone.NBT_POINT_NEAR);
+        if(blockPosNearNBT.isEmpty()){
             // saveNear
-            tag.setInteger(ItemRodClone.NBT_DIMENSION, player.dimension);
-            tag.setTag(ItemRodClone.NBT_POINT_NEAR, NBTUtil.createPosTag(blockPos));
+            tag.putInt(ItemRodClone.NBT_DIMENSION, player.dimension.getId());
+            tag.put(ItemRodClone.NBT_POINT_NEAR, NBTUtil.writeBlockPos(blockPos));
             sendNBTTagToServer(stack);
             return;
         }
         
-        NBTTagCompound blockPosEndNBT = tag.getCompoundTag(ItemRodClone.NBT_POINT_END);
-        if(blockPosEndNBT.hasNoTags()){
+        CompoundNBT blockPosEndNBT = tag.getCompound(ItemRodClone.NBT_POINT_END);
+        if(blockPosEndNBT.isEmpty()){
             // saveEnd
-            BlockPos blockPosNear = NBTUtil.getPosFromTag(blockPosNearNBT);
+            BlockPos blockPosNear = NBTUtil.readBlockPos(blockPosNearNBT);
             int sizeX = Math.abs((blockPos.getX() - blockPosNear.getX()));
             int sizeY = Math.abs((blockPos.getY() - blockPosNear.getY()));
             int sizeZ = Math.abs((blockPos.getZ() - blockPosNear.getZ()));
@@ -93,27 +98,27 @@ public class RodCloneHelper {
                 ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodClone.warning.rangeTooLarge", ConfigHandler.rodCloneMaxLength);
                 return;
             }
-            tag.setTag(ItemRodClone.NBT_POINT_END, NBTUtil.createPosTag(blockPos));
+            tag.put(ItemRodClone.NBT_POINT_END, NBTUtil.writeBlockPos(blockPos));
             sendNBTTagToServer(stack);
             return;
         }
 
-        NBTTagCompound blockPosScheduledNBT = tag.getCompoundTag(ItemRodClone.NBT_POINT_SCHEDULED);
-        if(blockPosScheduledNBT.hasNoTags()){
+        CompoundNBT blockPosScheduledNBT = tag.getCompound(ItemRodClone.NBT_POINT_SCHEDULED);
+        if(blockPosScheduledNBT.isEmpty()){
             // saveScheduled
-            tag.setTag(ItemRodClone.NBT_POINT_SCHEDULED, NBTUtil.createPosTag(blockPos));
-            tag.setInteger(ItemRodClone.NBT_POINT_SCHEDULED_FACING, player.getHorizontalFacing().ordinal());
+            tag.put(ItemRodClone.NBT_POINT_SCHEDULED, NBTUtil.writeBlockPos(blockPos));
+            tag.putInt(ItemRodClone.NBT_POINT_SCHEDULED_FACING, player.getHorizontalFacing().ordinal());
             sendNBTTagToServer(stack);
             return;
         }
 
-        BlockPos blockPosScheduled = NBTUtil.getPosFromTag(blockPosScheduledNBT);
+        BlockPos blockPosScheduled = NBTUtil.readBlockPos(blockPosScheduledNBT);
         if(blockPos.equals(blockPosScheduled)){
             // build
-            BlockPos blockPosNear = NBTUtil.getPosFromTag(blockPosNearNBT);
-            BlockPos blockPosEnd = NBTUtil.getPosFromTag(blockPosEndNBT);
+            BlockPos blockPosNear = NBTUtil.readBlockPos(blockPosNearNBT);
+            BlockPos blockPosEnd = NBTUtil.readBlockPos(blockPosEndNBT);
             
-            EnumFacing facingScheduled = getFacingScheduled(stack);
+            Direction facingScheduled = getFacingScheduled(stack);
             if(facingScheduled == null){ // safe code
                 sendRemoveNBTTagToServer(stack, ItemRodClone.NBT_POINT_SCHEDULED);
                 sendRemoveNBTTagToServer(stack, ItemRodClone.NBT_POINT_SCHEDULED_FACING);
@@ -131,14 +136,14 @@ public class RodCloneHelper {
         }
         else{
             // saveScheduled
-            tag.setTag(ItemRodClone.NBT_POINT_SCHEDULED, NBTUtil.createPosTag(blockPos));
-            tag.setInteger(ItemRodClone.NBT_POINT_SCHEDULED_FACING, player.getHorizontalFacing().ordinal());
+            tag.put(ItemRodClone.NBT_POINT_SCHEDULED, NBTUtil.writeBlockPos(blockPos));
+            tag.putInt(ItemRodClone.NBT_POINT_SCHEDULED_FACING, player.getHorizontalFacing().ordinal());
             sendNBTTagToServer(stack);
         }
     }
 
-    @SideOnly(Side.CLIENT)
-    public static void onRightClickWithPressShift(ItemStack stack, EntityPlayer player){
+    @OnlyIn(Dist.CLIENT)
+    public static void onRightClickWithPressShift(ItemStack stack, PlayerEntity player){
         if(getBlockPosScheduled(stack) != null){
             sendRemoveNBTTagToServer(stack, ItemRodClone.NBT_POINT_SCHEDULED);
             sendRemoveNBTTagToServer(stack, ItemRodClone.NBT_POINT_SCHEDULED_FACING);
@@ -150,8 +155,8 @@ public class RodCloneHelper {
         }
     }
 
-    @SideOnly(Side.CLIENT)
-    public static void onRightClickBlock(RightClickBlock event, ItemStack stack, EntityPlayer player){
+    @OnlyIn(Dist.CLIENT)
+    public static void onRightClickBlock(RightClickBlock event, ItemStack stack, PlayerEntity player){
         if(player.isSneaking()){
             onRightClickWithPressShift(stack, player);
         }
@@ -160,23 +165,23 @@ public class RodCloneHelper {
         }
     }
 
-    @SideOnly(Side.CLIENT)
-    public static void onRightClickItem(ItemStack stack, EntityPlayer player){
+    @OnlyIn(Dist.CLIENT)
+    public static void onRightClickItem(ItemStack stack, PlayerEntity player){
         if(player.isSneaking()){
             onRightClickWithPressShift(stack, player);
         }
         else{
-            onRightClickTargetBlock(getBlockPosSeeing(stack, player, Minecraft.getMinecraft().getRenderPartialTicks()), stack, player);
+            onRightClickTargetBlock(getBlockPosSeeing(stack, player, Minecraft.getInstance().getRenderPartialTicks()), stack, player);
         }
     }
 
-    public static void handleBuilding(EntityPlayer player, BlockPos posNear, BlockPos posEnd, BlockPos posDst, Rotation rotation){
+    public static void handleBuilding(PlayerEntity player, BlockPos posNear, BlockPos posEnd, BlockPos posDst, Rotation rotation){
         World world = player.world;
-        InventoryPlayer inventory = player.inventory;
+        PlayerInventory inventory = player.inventory;
         int size = inventory.getSizeInventory();
         
 
-        EnumFacing facingDst = rotation.rotate(getFacingAABB(posNear, posEnd));
+        Direction facingDst = rotation.rotate(getFacingAABB(posNear, posEnd));
         AxisAlignedBB aabb = getScheduledAABB(posNear, posEnd, facingDst, posDst);
         if(aabb.intersects(new AxisAlignedBB(posNear, posEnd).expand(1, 1, 1))){
             ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodClone.warning.rangesInterfere");
@@ -189,7 +194,7 @@ public class RodCloneHelper {
             BlockPos dst = posDst.add(posRotated);
             
             if(world.isAirBlock(dst) && !world.isAirBlock(src)){
-                IBlockState blockState = world.getBlockState(src).withRotation(rotation);
+                BlockState blockState = world.getBlockState(src).rotate(rotation);
                 Block block = blockState.getBlock();
                 Item item = Item.getItemFromBlock(block);
                 int damage = block.damageDropped(blockState);
@@ -200,7 +205,7 @@ public class RodCloneHelper {
                 }
                 for(int i = 0; i < size; i++){
                     ItemStack stack = inventory.getStackInSlot(i);
-                    if(stack.getItem() == item && stack.getItemDamage() == damage){
+                    if(stack.getItem() == item && stack.getDamage() == damage){
                         stack.shrink(1);
                         world.setBlockState(dst, blockState);
                         break;
@@ -210,10 +215,10 @@ public class RodCloneHelper {
         }
     }
 
-    public static void handleTransfering(EntityPlayer player, BlockPos posNear, BlockPos posEnd, BlockPos posDst, Rotation rotation){
+    public static void handleTransfering(PlayerEntity player, BlockPos posNear, BlockPos posEnd, BlockPos posDst, Rotation rotation){
         World world = player.world;
 
-        EnumFacing facingDst = rotation.rotate(getFacingAABB(posNear, posEnd));
+        Direction facingDst = rotation.rotate(getFacingAABB(posNear, posEnd));
         AxisAlignedBB aabb = getScheduledAABB(posNear, posEnd, facingDst, posDst);
         if(aabb.intersects(new AxisAlignedBB(posNear, posEnd).expand(1, 1, 1))){
             ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodClone.warning.rangesInterfere");
@@ -234,31 +239,31 @@ public class RodCloneHelper {
             BlockPos dst = posDst.add(posRotated);
             
             if(!world.isAirBlock(dst) || !world.isAirBlock(src)){
-                IBlockState blockState1 = world.getBlockState(src).withRotation(rotation);
+                BlockState blockState1 = world.getBlockState(src).rotate(rotation);
                 TileEntity tileEntity1 = world.getTileEntity(src);
-                NBTTagCompound tag1 = new NBTTagCompound();
+                CompoundNBT tag1 = new CompoundNBT();
                 if(tileEntity1 != null){
-                    tileEntity1.writeToNBT(tag1);
+                    tileEntity1.write(tag1);
                     world.removeTileEntity(src);
                 }
-                IBlockState blockState2 = world.getBlockState(dst).withRotation(rotation2);
+                BlockState blockState2 = world.getBlockState(dst).rotate(rotation2);
                 TileEntity tileEntity2 = world.getTileEntity(dst);
-                NBTTagCompound tag2 = new NBTTagCompound();
+                CompoundNBT tag2 = new CompoundNBT();
                 if(tileEntity2 != null){
-                    tileEntity2.writeToNBT(tag2);
+                    tileEntity2.write(tag2);
                     world.removeTileEntity(dst);
                 }
 
                 world.setBlockState(dst, blockState1);
                 if(tileEntity1 != null){
-                    TileEntity tileEntity1Sub = TileEntity.create(world, tag1);
+                    TileEntity tileEntity1Sub = TileEntity.create(tag1);
                     world.setTileEntity(dst, tileEntity1Sub);
                     tileEntity1Sub.setPos(dst);
                     tileEntity1Sub.setWorld(world);
                 }
                 world.setBlockState(src, blockState2);
                 if(tileEntity2 != null){
-                    TileEntity tileEntity2Sub = TileEntity.create(world, tag2);
+                    TileEntity tileEntity2Sub = TileEntity.create(tag2);
                     world.setTileEntity(src, tileEntity2Sub);
                     tileEntity2Sub.setPos(src);
                     tileEntity2Sub.setWorld(world);
@@ -269,62 +274,62 @@ public class RodCloneHelper {
 
     @Nullable
     public static Integer getDimension(ItemStack stack){
-        NBTTagCompound tag = ModUtils.getTagThoughAbsent(stack);
-        if(tag.hasKey(ItemRodClone.NBT_DIMENSION)){
-            return tag.getInteger(ItemRodClone.NBT_DIMENSION);
+        CompoundNBT tag = stack.getOrCreateTag();
+        if(tag.contains(ItemRodClone.NBT_DIMENSION)){
+            return tag.getInt(ItemRodClone.NBT_DIMENSION);
         }
         return null;
     }
 
     @Nullable
     public static BlockPos getBlockPosNear(ItemStack stack){
-        NBTTagCompound tag = ModUtils.getTagThoughAbsent(stack);
-        NBTTagCompound blockPosNearNBT = tag.getCompoundTag(ItemRodClone.NBT_POINT_NEAR);
-        if(!blockPosNearNBT.hasNoTags()){
-            return NBTUtil.getPosFromTag(blockPosNearNBT);
+        CompoundNBT tag = stack.getOrCreateTag();
+        CompoundNBT blockPosNearNBT = tag.getCompound(ItemRodClone.NBT_POINT_NEAR);
+        if(!blockPosNearNBT.isEmpty()){
+            return NBTUtil.readBlockPos(blockPosNearNBT);
         }
         return null;
     }
 
     @Nullable
     public static BlockPos getBlockPosEnd(ItemStack stack){
-        NBTTagCompound tag = ModUtils.getTagThoughAbsent(stack);
-        NBTTagCompound blockPosEndNBT = tag.getCompoundTag(ItemRodClone.NBT_POINT_END);
-        if(!blockPosEndNBT.hasNoTags()){
-            return NBTUtil.getPosFromTag(blockPosEndNBT);
+        CompoundNBT tag = stack.getOrCreateTag();
+        CompoundNBT blockPosEndNBT = tag.getCompound(ItemRodClone.NBT_POINT_END);
+        if(!blockPosEndNBT.isEmpty()){
+            return NBTUtil.readBlockPos(blockPosEndNBT);
         }
         return null;
     }
 
     @Nullable
     public static BlockPos getBlockPosScheduled(ItemStack stack){
-        NBTTagCompound tag = ModUtils.getTagThoughAbsent(stack);
-        NBTTagCompound blockPosScheduledNBT = tag.getCompoundTag(ItemRodClone.NBT_POINT_SCHEDULED);
-        if(!blockPosScheduledNBT.hasNoTags()){
-            return NBTUtil.getPosFromTag(blockPosScheduledNBT);
+        CompoundNBT tag = stack.getOrCreateTag();
+        CompoundNBT blockPosScheduledNBT = tag.getCompound(ItemRodClone.NBT_POINT_SCHEDULED);
+        if(!blockPosScheduledNBT.isEmpty()){
+            return NBTUtil.readBlockPos(blockPosScheduledNBT);
         }
         return null;
     }
 
     @Nullable
-    public static EnumFacing getFacingScheduled(ItemStack stack){
-        NBTTagCompound tag = ModUtils.getTagThoughAbsent(stack);
-        return EnumFacing.values()[tag.getInteger(ItemRodClone.NBT_POINT_SCHEDULED_FACING)];
+    public static Direction getFacingScheduled(ItemStack stack){
+        CompoundNBT tag = stack.getOrCreateTag();
+        return Direction.values()[tag.getInt(ItemRodClone.NBT_POINT_SCHEDULED_FACING)];
     }
 
     @Nullable
-    public static AxisAlignedBB getScheduledAABB(ItemStack stack, EntityPlayer player, BlockPos posSeeing){
+    public static AxisAlignedBB getScheduledAABB(ItemStack stack, PlayerEntity player, BlockPos posSeeing){
         BlockPos posNear = getBlockPosNear(stack);
         BlockPos posEnd = getBlockPosEnd(stack);
         if(posNear == null || posEnd == null) return null;
-        EnumFacing facingPlayer = player.getHorizontalFacing();
+        Direction facingPlayer = player.getHorizontalFacing();
         
         return getScheduledAABB(posNear, posEnd, facingPlayer, posSeeing);
     }
 
     @Nonnull
-    public static AxisAlignedBB getScheduledAABB(BlockPos posNear, BlockPos posEnd, EnumFacing facingDst, BlockPos posDst){
-        EnumFacing facingSource = getFacingAABB(posNear, posEnd);
+    public static AxisAlignedBB getScheduledAABB(BlockPos posNear, BlockPos posEnd, Direction facingDst, BlockPos posDst){
+        Direction facingSource = getFacingAABB(posNear, posEnd);
         BlockPos posDiff = posEnd.subtract(posNear);
         Rotation rot = getRotation(facingSource, facingDst);
         BlockPos posRotated = posDiff.rotate(rot);
@@ -346,22 +351,22 @@ public class RodCloneHelper {
     }
 
     @Nonnull
-    public static EnumFacing getFacingAABB(BlockPos posNear, BlockPos posEnd){
+    public static Direction getFacingAABB(BlockPos posNear, BlockPos posEnd){
         if(posEnd.getX() >= posNear.getX()){
             if(posEnd.getZ() >= posNear.getZ()){
-                return EnumFacing.EAST;
+                return Direction.EAST;
             }
-            return EnumFacing.NORTH;
+            return Direction.NORTH;
         }
         else{
             if(posEnd.getZ() >= posNear.getZ()){
-                return EnumFacing.SOUTH;
+                return Direction.SOUTH;
             }
-            return EnumFacing.WEST;
+            return Direction.WEST;
         }
     }
     
-    public static Rotation getRotation(EnumFacing facingSource, EnumFacing facingTarget){
+    public static Rotation getRotation(Direction facingSource, Direction facingTarget){
         int rotationInt = facingTarget.getHorizontalIndex() - facingSource.getHorizontalIndex();
         if(rotationInt > 2){
             rotationInt -= 4;
@@ -381,25 +386,25 @@ public class RodCloneHelper {
         return Rotation.NONE;
     }
 
-    @SideOnly(Side.CLIENT)
-    public static BlockPos getBlockPosSeeing(ItemStack stack, EntityPlayer player, float partialTicks){
-        NBTTagCompound tag = ModUtils.getTagThoughAbsent(stack);
+    @OnlyIn(Dist.CLIENT)
+    public static BlockPos getBlockPosSeeing(ItemStack stack, PlayerEntity player, float partialTicks){
+        CompoundNBT tag = stack.getOrCreateTag();
 
-        int distance = tag.getInteger(ItemRodClone.NBT_REACH_DISTANCE);
+        int distance = tag.getInt(ItemRodClone.NBT_REACH_DISTANCE);
         BlockPos blockPos = null;
         RayTraceResult objectMouseOver = RodUtils.proxy.getObjectMouseOver();
         boolean isLookingAir = true;
-        if(objectMouseOver != null && objectMouseOver.getBlockPos() != null){
-            blockPos = objectMouseOver.getBlockPos();
+        if(objectMouseOver != null && objectMouseOver.getType() == Type.BLOCK){
+            blockPos = new BlockPos(objectMouseOver.getHitVec());
             isLookingAir = player.world.isAirBlock(blockPos);
         }
         if (isLookingAir){
-            Vec3d vec3d = player.getPositionEyes(partialTicks);
+            Vec3d vec3d = player.getEyePosition(partialTicks);
             Vec3d vec3d1 = player.getLook(partialTicks).scale(distance);
             Vec3d vec3d2 = vec3d.add(vec3d1);
-            objectMouseOver = player.world.rayTraceBlocks(vec3d, vec3d2);
-            if(objectMouseOver != null && objectMouseOver.getBlockPos() != null){
-                blockPos = objectMouseOver.getBlockPos();
+            objectMouseOver = player.world.rayTraceBlocks(new RayTraceContext(vec3d, vec3d2, BlockMode.COLLIDER, FluidMode.NONE, player));
+            if(objectMouseOver != null && objectMouseOver.getType() == Type.BLOCK){
+                blockPos = new BlockPos(objectMouseOver.getHitVec());
             }
             else{
                 blockPos = new BlockPos(vec3d2);
@@ -409,25 +414,25 @@ public class RodCloneHelper {
         return blockPos;
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public static void sendRemoveNBTTagToServer(ItemStack stack, String key){
-        NBTTagCompound nbt = stack.getTagCompound();
+        CompoundNBT nbt = stack.getTag();
         if(nbt == null || !nbt.hasUniqueId(IItemHasUUID.NBT_UUID)) return;
         UUID uuid = IItemHasUUID.getUUID(stack);
 
-        NBTTagCompound nbtRemove = new NBTTagCompound();
-        nbtRemove.setInteger(key, 0);
+        CompoundNBT nbtRemove = new CompoundNBT();
+        nbtRemove.putInt(key, 0);
 
         ModPacketHandler.INSTANCE.sendToServer(new CPacketItemUpdateNBT(nbtRemove, uuid, CPacketItemUpdateNBT.Operation.REMOVE));
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public static void sendNBTTagToServer(ItemStack stack){
-        NBTTagCompound nbt = stack.getTagCompound();
+        CompoundNBT nbt = stack.getTag();
         if(nbt == null || !nbt.hasUniqueId(IItemHasUUID.NBT_UUID)) return;
         UUID uuid = IItemHasUUID.getUUID(stack);
 
-        NBTTagCompound nbtMerge = new NBTTagCompound();
+        CompoundNBT nbtMerge = new CompoundNBT();
         copyTagInt(nbtMerge, nbt, ItemRodClone.NBT_DIMENSION);
         copyTagCompound(nbtMerge, nbt, ItemRodClone.NBT_POINT_NEAR);
         copyTagCompound(nbtMerge, nbt, ItemRodClone.NBT_POINT_END);
@@ -436,13 +441,13 @@ public class RodCloneHelper {
         ModPacketHandler.INSTANCE.sendToServer(new CPacketItemUpdateNBT(nbtMerge, uuid, CPacketItemUpdateNBT.Operation.ADD));
     }
 
-    private static void copyTagInt(NBTTagCompound nbtDst, NBTTagCompound nbtSource, String key){
-        nbtDst.setInteger(key, nbtSource.getInteger(key));
+    private static void copyTagInt(CompoundNBT nbtDst, CompoundNBT nbtSource, String key){
+        nbtDst.putInt(key, nbtSource.getInt(key));
     }
 
-    private static void copyTagCompound(NBTTagCompound nbtDst, NBTTagCompound nbtSource, String key){
-        NBTBase tag = nbtSource.getTag(key);
+    private static void copyTagCompound(CompoundNBT nbtDst, CompoundNBT nbtSource, String key){
+        INBT tag = nbtSource.get(key);
         if(tag == null) return;
-        nbtDst.setTag(key, nbtSource.getTag(key));
+        nbtDst.put(key, nbtSource.get(key));
     }
 }

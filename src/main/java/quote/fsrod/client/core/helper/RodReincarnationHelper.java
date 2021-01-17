@@ -12,34 +12,37 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagInt;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.IntNBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTUtil;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.RayTraceContext.BlockMode;
+import net.minecraft.util.math.RayTraceContext.FluidMode;
+import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.MouseEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.InputEvent.MouseScrollEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
-import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import quote.fsrod.common.RodUtils;
 import quote.fsrod.common.core.handler.ConfigHandler;
 import quote.fsrod.common.core.handler.ModSoundHandler;
@@ -49,7 +52,6 @@ import quote.fsrod.common.core.network.item.CPacketItemUpdateSplitNBTList;
 import quote.fsrod.common.core.network.item.CPacketRodReincarnationStartBuilding;
 import quote.fsrod.common.core.utils.ChatUtils;
 import quote.fsrod.common.core.utils.ModLogger;
-import quote.fsrod.common.core.utils.ModUtils;
 import quote.fsrod.common.item.rod.ItemRodReincarnation;
 import quote.fsrod.common.item.utils.IItemHasSplitNBTList;
 import quote.fsrod.common.item.utils.IItemHasUUID;
@@ -61,25 +63,25 @@ public class RodReincarnationHelper {
 
     private RodReincarnationHelper(){}
 
-    @SideOnly(Side.CLIENT)
-    public static void onMouseEvent(MouseEvent event, ItemStack stack, EntityPlayer player){
-        if (event.getDwheel() != 0 && player.isSneaking()){
-            NBTTagCompound nbt = ModUtils.getTagThoughAbsent(stack);
+    @OnlyIn(Dist.CLIENT)
+    public static void onMouseEvent(MouseScrollEvent event, ItemStack stack, PlayerEntity player){
+        if (event.getScrollDelta() != 0 && player.isSneaking()){
+            CompoundNBT nbt = stack.getOrCreateTag();
             if(!nbt.hasUniqueId(IItemHasUUID.NBT_UUID)) return;
             UUID uuid = IItemHasUUID.getUUID(stack);
 
-            int oldReach = nbt.getInteger(ItemRodReincarnation.NBT_REACH_DISTANCE);
-            int newReach = MathHelper.clamp(oldReach + event.getDwheel() / 120, 2, 10);
-            nbt.setInteger(ItemRodReincarnation.NBT_REACH_DISTANCE, newReach);
+            int oldReach = nbt.getInt(ItemRodReincarnation.NBT_REACH_DISTANCE);
+            int newReach = (int)MathHelper.clamp(oldReach + event.getScrollDelta() / 120, 2, 10);
+            nbt.putInt(ItemRodReincarnation.NBT_REACH_DISTANCE, newReach);
 
             ModPacketHandler.INSTANCE.sendToServer(new CPacketItemUpdateNBT(nbt, uuid, CPacketItemUpdateNBT.Operation.ADD));
             event.setCanceled(true);
         }
     }
 
-    @SideOnly(Side.CLIENT)
-    public static void onRightClickTargetBlock(BlockPos blockPos, ItemStack stack, EntityPlayer player){
-        NBTTagCompound tag = ModUtils.getTagThoughAbsent(stack);
+    @OnlyIn(Dist.CLIENT)
+    public static void onRightClickTargetBlock(BlockPos blockPos, ItemStack stack, PlayerEntity player){
+        CompoundNBT tag = stack.getOrCreateTag();
 
         if(!hasFilePathNBT(stack)){
             ChatUtils.sendTranslatedChat(player, TextFormatting.WHITE, "fs.message.rodReincarnation.warning.noFileName");
@@ -87,22 +89,22 @@ public class RodReincarnationHelper {
         }
         if(existsFile(stack)){
             // FILE => WORLD
-            if(tag.hasKey(ItemRodReincarnation.NBT_DATA) && !tag.hasKey(IItemHasSplitNBTList.NBT_SPLIT)){
+            if(tag.contains(ItemRodReincarnation.NBT_DATA) && !tag.contains(IItemHasSplitNBTList.NBT_SPLIT)){
                 
-                NBTTagCompound blockPosScheduledNBT = tag.getCompoundTag(ItemRodReincarnation.NBT_POINT_SCHEDULED);
-                if(blockPosScheduledNBT.hasNoTags()){
+                CompoundNBT blockPosScheduledNBT = tag.getCompound(ItemRodReincarnation.NBT_POINT_SCHEDULED);
+                if(blockPosScheduledNBT.isEmpty()){
                     // saveScheduled
-                    tag.setTag(ItemRodReincarnation.NBT_POINT_SCHEDULED, NBTUtil.createPosTag(blockPos));
-                    tag.setInteger(ItemRodReincarnation.NBT_POINT_SCHEDULED_FACING, player.getHorizontalFacing().ordinal());
+                    tag.put(ItemRodReincarnation.NBT_POINT_SCHEDULED, NBTUtil.writeBlockPos(blockPos));
+                    tag.putInt(ItemRodReincarnation.NBT_POINT_SCHEDULED_FACING, player.getHorizontalFacing().ordinal());
                     sendPosNBTTagToServer(stack);
                     return;
                 }
 
-                BlockPos blockPosScheduled = NBTUtil.getPosFromTag(blockPosScheduledNBT);
+                BlockPos blockPosScheduled = NBTUtil.readBlockPos(blockPosScheduledNBT);
                 if(blockPos.equals(blockPosScheduled)){
                     // build
                     
-                    EnumFacing facingScheduled = getFacingScheduled(stack);
+                    Direction facingScheduled = getFacingScheduled(stack);
                     if(facingScheduled == null){ // safe code
                         sendRemoveNBTTagToServer(stack, ItemRodReincarnation.NBT_POINT_SCHEDULED);
                         sendRemoveNBTTagToServer(stack, ItemRodReincarnation.NBT_POINT_SCHEDULED_FACING);
@@ -110,14 +112,14 @@ public class RodReincarnationHelper {
                         return;
                     }
                     
-                    Rotation rotation = getRotation(EnumFacing.EAST, facingScheduled);
+                    Rotation rotation = getRotation(Direction.EAST, facingScheduled);
                     UUID uuid = IItemHasUUID.getUUID(stack);
                     ModPacketHandler.INSTANCE.sendToServer(new CPacketRodReincarnationStartBuilding(CPacketRodReincarnationStartBuilding.Operation.TRUE_BUILD, blockPosScheduled, rotation, uuid));
                 }
                 else{
                     // saveScheduled
-                    tag.setTag(ItemRodReincarnation.NBT_POINT_SCHEDULED, NBTUtil.createPosTag(blockPos));
-                    tag.setInteger(ItemRodReincarnation.NBT_POINT_SCHEDULED_FACING, player.getHorizontalFacing().ordinal());
+                    tag.put(ItemRodReincarnation.NBT_POINT_SCHEDULED, NBTUtil.writeBlockPos(blockPos));
+                    tag.putInt(ItemRodReincarnation.NBT_POINT_SCHEDULED_FACING, player.getHorizontalFacing().ordinal());
                     sendPosNBTTagToServer(stack);
                 }
             }
@@ -136,18 +138,18 @@ public class RodReincarnationHelper {
             sendRemoveNBTTagToServer(stack, ItemRodReincarnation.NBT_POINT_SCHEDULED_FACING);
             sendRemoveNBTTagToServer(stack, ItemRodReincarnation.NBT_DATA);
 
-            NBTTagCompound blockPosNearNBT = tag.getCompoundTag(ItemRodReincarnation.NBT_POINT_NEAR);
-            if(blockPosNearNBT.hasNoTags()){
+            CompoundNBT blockPosNearNBT = tag.getCompound(ItemRodReincarnation.NBT_POINT_NEAR);
+            if(blockPosNearNBT.isEmpty()){
                 // saveNear
-                tag.setTag(ItemRodReincarnation.NBT_POINT_NEAR, NBTUtil.createPosTag(blockPos));
+                tag.put(ItemRodReincarnation.NBT_POINT_NEAR, NBTUtil.writeBlockPos(blockPos));
                 sendPosNBTTagToServer(stack);
                 return;
             }
             
-            NBTTagCompound blockPosEndNBT = tag.getCompoundTag(ItemRodReincarnation.NBT_POINT_END);
-            if(blockPosEndNBT.hasNoTags()){
+            CompoundNBT blockPosEndNBT = tag.getCompound(ItemRodReincarnation.NBT_POINT_END);
+            if(blockPosEndNBT.isEmpty()){
                 // saveEnd
-                BlockPos blockPosNear = NBTUtil.getPosFromTag(blockPosNearNBT);
+                BlockPos blockPosNear = NBTUtil.readBlockPos(blockPosNearNBT);
                 int sizeX = Math.abs((blockPos.getX() - blockPosNear.getX()));
                 int sizeY = Math.abs((blockPos.getY() - blockPosNear.getY()));
                 int sizeZ = Math.abs((blockPos.getZ() - blockPosNear.getZ()));
@@ -155,13 +157,13 @@ public class RodReincarnationHelper {
                     ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodReincarnation.warning.rangeTooLarge", ConfigHandler.rodReincarnationMaxLength);
                     return;
                 }
-                tag.setTag(ItemRodReincarnation.NBT_POINT_END, NBTUtil.createPosTag(blockPos));
+                tag.put(ItemRodReincarnation.NBT_POINT_END, NBTUtil.writeBlockPos(blockPos));
                 sendPosNBTTagToServer(stack);
                 return;
             }
 
-            BlockPos blockPosNear = NBTUtil.getPosFromTag(blockPosNearNBT);
-            BlockPos blockPosEnd = NBTUtil.getPosFromTag(blockPosEndNBT);
+            BlockPos blockPosNear = NBTUtil.readBlockPos(blockPosNearNBT);
+            BlockPos blockPosEnd = NBTUtil.readBlockPos(blockPosEndNBT);
             if(blockPos.equals(blockPosNear)){
                 // SAVE
                 handleSaving(player, blockPosNear, blockPosEnd, stack);
@@ -198,8 +200,8 @@ public class RodReincarnationHelper {
         return true;
     }
 
-    @SideOnly(Side.CLIENT)
-    public static void onRightClickWithPressShift(ItemStack stack, EntityPlayer player){
+    @OnlyIn(Dist.CLIENT)
+    public static void onRightClickWithPressShift(ItemStack stack, PlayerEntity player){
         if(getBlockPosScheduled(stack) != null){
             sendRemoveNBTTagToServer(stack, ItemRodReincarnation.NBT_POINT_SCHEDULED);
             sendRemoveNBTTagToServer(stack, ItemRodReincarnation.NBT_POINT_SCHEDULED_FACING);
@@ -211,8 +213,8 @@ public class RodReincarnationHelper {
         }
     }
 
-    @SideOnly(Side.CLIENT)
-    public static void onRightClickBlock(RightClickBlock event, ItemStack stack, EntityPlayer player){
+    @OnlyIn(Dist.CLIENT)
+    public static void onRightClickBlock(RightClickBlock event, ItemStack stack, PlayerEntity player){
         if(player.isSneaking()){
             onRightClickWithPressShift(stack, player);
         }
@@ -221,34 +223,34 @@ public class RodReincarnationHelper {
         }
     }
 
-    @SideOnly(Side.CLIENT)
-    public static void onRightClickItem(ItemStack stack, EntityPlayer player){
+    @OnlyIn(Dist.CLIENT)
+    public static void onRightClickItem(ItemStack stack, PlayerEntity player){
         if(player.isSneaking()){
             onRightClickWithPressShift(stack, player);
         }
         else{
-            onRightClickTargetBlock(getBlockPosSeeing(stack, player, Minecraft.getMinecraft().getRenderPartialTicks()), stack, player);
+            onRightClickTargetBlock(getBlockPosSeeing(stack, player, Minecraft.getInstance().getRenderPartialTicks()), stack, player);
         }
     }
 
-    public static void handleBuilding(EntityPlayer player, BlockPos posDst, Rotation rotation, ItemStack stackRod){
+    public static void handleBuilding(PlayerEntity player, BlockPos posDst, Rotation rotation, ItemStack stackRod){
         World world = player.world;
-        InventoryPlayer inventory = player.inventory;
+        PlayerInventory inventory = player.inventory;
         int size = inventory.getSizeInventory();
 
 
-        NBTTagCompound tag = stackRod.getTagCompound();
-        if(tag == null || !tag.hasKey(ItemRodReincarnation.NBT_DATA)){
+        CompoundNBT tag = stackRod.getTag();
+        if(tag == null || !tag.contains(ItemRodReincarnation.NBT_DATA)){
             ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodReincarnation.build.failed");
             return;
         }
-        NBTTagCompound tagData = tag.getCompoundTag(ItemRodReincarnation.NBT_DATA);
+        CompoundNBT tagData = tag.getCompound(ItemRodReincarnation.NBT_DATA);
 
         BasicStrucure structure = new BasicStrucure(tagData, new ResourceLocation(""));
         int sizeX = structure.getSizeX();
         int sizeY = structure.getSizeY();
         int sizeZ = structure.getSizeZ();
-        List<IBlockState> states = structure.getStates();
+        List<BlockState> states = structure.getStates();
         int[] stateNums = structure.getSteteNums();
 
         int i = 0;
@@ -264,9 +266,9 @@ public class RodReincarnationHelper {
                         continue;
                     }
                     int stateNum = stateNums[i];
-                    IBlockState state = states.get(stateNum);
+                    BlockState state = states.get(stateNum);
                     if(state != null){
-                        IBlockState stateRotated = state.withRotation(rotation);
+                        BlockState stateRotated = state.rotate(rotation);
                         Block block = stateRotated.getBlock();
                         Item item = Item.getItemFromBlock(block);
                         int damage = block.damageDropped(stateRotated);
@@ -278,7 +280,7 @@ public class RodReincarnationHelper {
                         }
                         for(int j = 0; j < size; j++){
                             ItemStack stack = inventory.getStackInSlot(j);
-                            if(stack.getItem() == item && stack.getItemDamage() == damage){
+                            if(stack.getItem() == item && stack.getDamage() == damage){
                                 stack.shrink(1);
                                 world.setBlockState(dst, stateRotated);
                                 break;
@@ -289,27 +291,27 @@ public class RodReincarnationHelper {
                 }
             }
         }
-        world.playSound((EntityPlayer)null, new BlockPos(player.getPositionVector()), ModSoundHandler.itemRodSuccess, SoundCategory.PLAYERS, 1.0f, (float)(1.0f + 0.05f*world.rand.nextGaussian()));
+        world.playSound((PlayerEntity)null, new BlockPos(player.getPositionVector()), ModSoundHandler.itemRodSuccess, SoundCategory.PLAYERS, 1.0f, (float)(1.0f + 0.05f*world.rand.nextGaussian()));
 
     }
 
-    public static void handleloading(EntityPlayer player, ItemStack stack){
-        NBTTagCompound tag = loadNBT(stack);
-        if(tag.hasNoTags()){
+    public static void handleloading(PlayerEntity player, ItemStack stack){
+        CompoundNBT tag = loadNBT(stack);
+        if(tag.isEmpty()){
             ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodReincarnation.use.load.failed");
             return;
         }
 
-        NBTTagCompound tagStack = ModUtils.getTagThoughAbsent(stack);
-        tagStack.setTag(ItemRodReincarnation.NBT_DATA, tag);
+        CompoundNBT tagStack = stack.getOrCreateTag();
+        tagStack.put(ItemRodReincarnation.NBT_DATA, tag);
         sendDataNBTTagToServer(stack);
-        tagStack.removeTag(ItemRodReincarnation.NBT_DATA);
+        tagStack.remove(ItemRodReincarnation.NBT_DATA);
     }
 
-    public static void handleSaving(EntityPlayer player, BlockPos posNear, BlockPos posEnd, ItemStack stack){
+    public static void handleSaving(PlayerEntity player, BlockPos posNear, BlockPos posEnd, ItemStack stack){
         BasicStrucure structure = new BasicStrucure(player.world, posNear, posEnd);
 
-        NBTTagCompound nbt = structure.serializeNBT();
+        CompoundNBT nbt = structure.serializeNBT();
         
         if(saveNBT(nbt, stack)){
             ChatUtils.sendTranslatedChat(player, TextFormatting.GREEN, "fs.message.rodReincarnation.use.save.success");
@@ -320,12 +322,12 @@ public class RodReincarnationHelper {
     }
 
     @Nonnull
-    public static NBTTagCompound loadNBT(ItemStack stack){
+    public static CompoundNBT loadNBT(ItemStack stack){
         File savesDir = FMLClientHandler.instance().getSavesDir();
         String filePath = getFileName(stack);
         File file = new File(savesDir, PATH_REINCARNATION_HOME + filePath);
 
-        if(!file.exists()) return new NBTTagCompound();
+        if(!file.exists()) return new CompoundNBT();
 
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             return CompressedStreamTools.readCompressed(fileInputStream);
@@ -333,10 +335,10 @@ public class RodReincarnationHelper {
             ModLogger.warning(e, file.toString());
         }
 
-        return new NBTTagCompound();
+        return new CompoundNBT();
     }
 
-    public static boolean saveNBT(NBTTagCompound tag, ItemStack stack){
+    public static boolean saveNBT(CompoundNBT tag, ItemStack stack){
         File savesDir = FMLClientHandler.instance().getSavesDir();
         String filePath = getFileName(stack);
         File file = new File(savesDir, PATH_REINCARNATION_HOME + filePath);
@@ -360,79 +362,79 @@ public class RodReincarnationHelper {
         return false;
     }
 
-    public static void setFileName(ItemStack stack, String filename, @Nullable EntityPlayer player){
+    public static void setFileName(ItemStack stack, String filename, @Nullable PlayerEntity player){
         if(filename.contains(" ") || filename.length() > 16){
             if(player != null){
                 ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodReincarnation.warning.invalidFileName");
             }
             return;
         }
-        NBTTagCompound tag = ModUtils.getTagThoughAbsent(stack);
-        tag.setString(ItemRodReincarnation.NBT_FILE, filename);
+        CompoundNBT tag = stack.getOrCreateTag();
+        tag.putString(ItemRodReincarnation.NBT_FILE, filename);
 
-        tag.removeTag(ItemRodReincarnation.NBT_DATA);
-        tag.removeTag(ItemRodReincarnation.NBT_POINT_NEAR);
-        tag.removeTag(ItemRodReincarnation.NBT_POINT_END);
-        tag.removeTag(ItemRodReincarnation.NBT_POINT_SCHEDULED);
-        tag.removeTag(ItemRodReincarnation.NBT_POINT_SCHEDULED_FACING);
+        tag.remove(ItemRodReincarnation.NBT_DATA);
+        tag.remove(ItemRodReincarnation.NBT_POINT_NEAR);
+        tag.remove(ItemRodReincarnation.NBT_POINT_END);
+        tag.remove(ItemRodReincarnation.NBT_POINT_SCHEDULED);
+        tag.remove(ItemRodReincarnation.NBT_POINT_SCHEDULED_FACING);
     }
 
     @Nullable
     public static String getFileName(ItemStack stack){
-        NBTTagCompound tag = ModUtils.getTagThoughAbsent(stack);
+        CompoundNBT tag = stack.getOrCreateTag();
         return tag.getString(ItemRodReincarnation.NBT_FILE);
     }
 
     @Nullable
     public static BlockPos getBlockPosNear(ItemStack stack){
-        NBTTagCompound tag = ModUtils.getTagThoughAbsent(stack);
-        NBTTagCompound blockPosNearNBT = tag.getCompoundTag(ItemRodReincarnation.NBT_POINT_NEAR);
-        if(!blockPosNearNBT.hasNoTags()){
-            return NBTUtil.getPosFromTag(blockPosNearNBT);
+        CompoundNBT tag = stack.getOrCreateTag();
+        CompoundNBT blockPosNearNBT = tag.getCompound(ItemRodReincarnation.NBT_POINT_NEAR);
+        if(!blockPosNearNBT.isEmpty()){
+            return NBTUtil.readBlockPos(blockPosNearNBT);
         }
         return null;
     }
 
     @Nullable
     public static BlockPos getBlockPosEnd(ItemStack stack){
-        NBTTagCompound tag = ModUtils.getTagThoughAbsent(stack);
-        NBTTagCompound blockPosEndNBT = tag.getCompoundTag(ItemRodReincarnation.NBT_POINT_END);
-        if(!blockPosEndNBT.hasNoTags()){
-            return NBTUtil.getPosFromTag(blockPosEndNBT);
+        CompoundNBT tag = stack.getOrCreateTag();
+        CompoundNBT blockPosEndNBT = tag.getCompound(ItemRodReincarnation.NBT_POINT_END);
+        if(!blockPosEndNBT.isEmpty()){
+            return NBTUtil.readBlockPos(blockPosEndNBT);
         }
         return null;
     }
 
     @Nullable
     public static BlockPos getBlockPosScheduled(ItemStack stack){
-        NBTTagCompound tag = ModUtils.getTagThoughAbsent(stack);
-        NBTTagCompound blockPosScheduledNBT = tag.getCompoundTag(ItemRodReincarnation.NBT_POINT_SCHEDULED);
-        if(!blockPosScheduledNBT.hasNoTags()){
-            return NBTUtil.getPosFromTag(blockPosScheduledNBT);
+        CompoundNBT tag = stack.getOrCreateTag();
+        CompoundNBT blockPosScheduledNBT = tag.getCompound(ItemRodReincarnation.NBT_POINT_SCHEDULED);
+        if(!blockPosScheduledNBT.isEmpty()){
+            return NBTUtil.readBlockPos(blockPosScheduledNBT);
         }
         return null;
     }
 
     @Nullable
-    public static EnumFacing getFacingScheduled(ItemStack stack){
-        NBTTagCompound tag = ModUtils.getTagThoughAbsent(stack);
-        return EnumFacing.values()[tag.getInteger(ItemRodReincarnation.NBT_POINT_SCHEDULED_FACING)];
+    public static Direction getFacingScheduled(ItemStack stack){
+        CompoundNBT tag = stack.getOrCreateTag();
+        return Direction.values()[tag.getInt(ItemRodReincarnation.NBT_POINT_SCHEDULED_FACING)];
     }
 
     @Nullable
     public static BlockPos getBlockPosData(ItemStack stack){
-        NBTTagCompound tag = ModUtils.getTagThoughAbsent(stack);
-        NBTTagCompound tagData = tag.getCompoundTag(ItemRodReincarnation.NBT_DATA);
-        if(tagData.hasNoTags()) return null;
+        CompoundNBT tag = stack.getOrCreateTag();
+        CompoundNBT tagData = tag.getCompound(ItemRodReincarnation.NBT_DATA);
+        if(tagData.isEmpty()) return null;
         return new BlockPos(
-            tagData.getInteger(BasicStrucure.NBT_DATA_SIZE_X) - 1,
-            tagData.getInteger(BasicStrucure.NBT_DATA_SIZE_Y) - 1,
-            tagData.getInteger(BasicStrucure.NBT_DATA_SIZE_Z) - 1);
+            tagData.getInt(BasicStrucure.NBT_DATA_SIZE_X) - 1,
+            tagData.getInt(BasicStrucure.NBT_DATA_SIZE_Y) - 1,
+            tagData.getInt(BasicStrucure.NBT_DATA_SIZE_Z) - 1);
     }
 
     @Nonnull
-    public static AxisAlignedBB getScheduledAABB(BlockPos posRelative, EnumFacing facingDst, BlockPos posDst){
-        EnumFacing facingSource = EnumFacing.EAST;
+    public static AxisAlignedBB getScheduledAABB(BlockPos posRelative, Direction facingDst, BlockPos posDst){
+        Direction facingSource = Direction.EAST;
         BlockPos posDiff = posRelative;
         Rotation rot = getRotation(facingSource, facingDst);
         BlockPos posRotated = posDiff.rotate(rot);
@@ -440,7 +442,7 @@ public class RodReincarnationHelper {
         return new AxisAlignedBB(posDst, posDst.add(posRotated)).expand(1, 1, 1);
     }
     
-    public static Rotation getRotation(EnumFacing facingSource, EnumFacing facingTarget){
+    public static Rotation getRotation(Direction facingSource, Direction facingTarget){
         int rotationInt = facingTarget.getHorizontalIndex() - facingSource.getHorizontalIndex();
         if(rotationInt > 2){
             rotationInt -= 4;
@@ -460,25 +462,25 @@ public class RodReincarnationHelper {
         return Rotation.NONE;
     }
 
-    @SideOnly(Side.CLIENT)
-    public static BlockPos getBlockPosSeeing(ItemStack stack, EntityPlayer player, float partialTicks){
-        NBTTagCompound tag = ModUtils.getTagThoughAbsent(stack);
+    @OnlyIn(Dist.CLIENT)
+    public static BlockPos getBlockPosSeeing(ItemStack stack, PlayerEntity player, float partialTicks){
+        CompoundNBT tag = stack.getOrCreateTag();
 
-        int distance = tag.getInteger(ItemRodReincarnation.NBT_REACH_DISTANCE);
+        int distance = tag.getInt(ItemRodReincarnation.NBT_REACH_DISTANCE);
         BlockPos blockPos = null;
         RayTraceResult objectMouseOver = RodUtils.proxy.getObjectMouseOver();
         boolean isLookingAir = true;
-        if(objectMouseOver != null && objectMouseOver.getBlockPos() != null){
-            blockPos = objectMouseOver.getBlockPos();
+        if(objectMouseOver != null && objectMouseOver.getType() == Type.BLOCK){
+            blockPos = new BlockPos(objectMouseOver.getHitVec());
             isLookingAir = player.world.isAirBlock(blockPos);
         }
         if (isLookingAir){
-            Vec3d vec3d = player.getPositionEyes(partialTicks);
+            Vec3d vec3d = player.getEyePosition(partialTicks);
             Vec3d vec3d1 = player.getLook(partialTicks).scale(distance);
             Vec3d vec3d2 = vec3d.add(vec3d1);
-            objectMouseOver = player.world.rayTraceBlocks(vec3d, vec3d2);
-            if(objectMouseOver != null && objectMouseOver.getBlockPos() != null){
-                blockPos = objectMouseOver.getBlockPos();
+            objectMouseOver = player.world.rayTraceBlocks(new RayTraceContext(vec3d, vec3d2, BlockMode.COLLIDER, FluidMode.NONE, player));
+            if(objectMouseOver != null && objectMouseOver.getType() == Type.BLOCK){
+                blockPos = new BlockPos(objectMouseOver.getHitVec());
             }
             else{
                 blockPos = new BlockPos(vec3d2);
@@ -488,56 +490,56 @@ public class RodReincarnationHelper {
         return blockPos;
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public static void sendRemoveNBTTagToServer(ItemStack stack, String key){
-        NBTTagCompound nbt = stack.getTagCompound();
+        CompoundNBT nbt = stack.getTag();
         if(nbt == null || !nbt.hasUniqueId(IItemHasUUID.NBT_UUID)) return;
         UUID uuid = IItemHasUUID.getUUID(stack);
 
-        NBTTagCompound nbtRemove = new NBTTagCompound();
-        nbtRemove.setInteger(key, 0);
+        CompoundNBT nbtRemove = new CompoundNBT();
+        nbtRemove.putInt(key, 0);
 
         ModPacketHandler.INSTANCE.sendToServer(new CPacketItemUpdateNBT(nbtRemove, uuid, CPacketItemUpdateNBT.Operation.REMOVE));
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public static void sendDataNBTTagToServer(ItemStack stack){
-        NBTTagCompound nbt = stack.getTagCompound();
+        CompoundNBT nbt = stack.getTag();
         if(nbt == null || !nbt.hasUniqueId(IItemHasUUID.NBT_UUID)) return;
         UUID uuid = IItemHasUUID.getUUID(stack);
 
-        NBTTagCompound nbtMerge = new NBTTagCompound();
-        NBTTagCompound nbtData = nbt.getCompoundTag(ItemRodReincarnation.NBT_DATA);
-        NBTTagList nbtStateNums = nbtData.getTagList(BasicStrucure.NBT_DATA_STATE_NUMS, 3);
-        nbtData.removeTag(BasicStrucure.NBT_DATA_STATE_NUMS);
-        nbtMerge.setTag(ItemRodReincarnation.NBT_DATA, nbtData);
+        CompoundNBT nbtMerge = new CompoundNBT();
+        CompoundNBT nbtData = nbt.getCompound(ItemRodReincarnation.NBT_DATA);
+        ListNBT nbtStateNums = nbtData.getList(BasicStrucure.NBT_DATA_STATE_NUMS, 3);
+        nbtData.remove(BasicStrucure.NBT_DATA_STATE_NUMS);
+        nbtMerge.put(ItemRodReincarnation.NBT_DATA, nbtData);
 
         // data exclude stateNum
         ModPacketHandler.INSTANCE.sendToServer(new CPacketItemUpdateNBT(nbtMerge, uuid, CPacketItemUpdateNBT.Operation.ADD));
         // split stateNum
-        int count = nbtStateNums.tagCount();
+        int count = nbtStateNums.size();
         int chunk = 2048;
         int split = MathHelper.ceil((float)count/chunk);
         UUID uuidSplitData = UUID.randomUUID();
         for(int i = 0; i < split; i++){
-            NBTTagList nbtSplitList = new NBTTagList();
+            ListNBT nbtSplitList = new ListNBT();
             for(int n = 0; n < chunk; n++){
                 int idx = i*chunk + n;
                 if(idx >= count) break;
 
-                nbtSplitList.appendTag(new NBTTagInt(nbtStateNums.getIntAt(idx)));
+                nbtSplitList.add(new IntNBT(nbtStateNums.getInt(idx)));
             }
             ModPacketHandler.INSTANCE.sendToServer(new CPacketItemUpdateSplitNBTList(nbtSplitList, uuid, i, split, uuidSplitData));
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public static void sendPosNBTTagToServer(ItemStack stack){
-        NBTTagCompound nbt = stack.getTagCompound();
+        CompoundNBT nbt = stack.getTag();
         if(nbt == null || !nbt.hasUniqueId(IItemHasUUID.NBT_UUID)) return;
         UUID uuid = IItemHasUUID.getUUID(stack);
 
-        NBTTagCompound nbtMerge = new NBTTagCompound();
+        CompoundNBT nbtMerge = new CompoundNBT();
         copyTagCompound(nbtMerge, nbt, ItemRodReincarnation.NBT_POINT_NEAR);
         copyTagCompound(nbtMerge, nbt, ItemRodReincarnation.NBT_POINT_END);
         copyTagCompound(nbtMerge, nbt, ItemRodReincarnation.NBT_POINT_SCHEDULED);
@@ -545,13 +547,13 @@ public class RodReincarnationHelper {
         ModPacketHandler.INSTANCE.sendToServer(new CPacketItemUpdateNBT(nbtMerge, uuid, CPacketItemUpdateNBT.Operation.ADD));
     }
 
-    private static void copyTagInt(NBTTagCompound nbtDst, NBTTagCompound nbtSource, String key){
-        nbtDst.setInteger(key, nbtSource.getInteger(key));
+    private static void copyTagInt(CompoundNBT nbtDst, CompoundNBT nbtSource, String key){
+        nbtDst.putInt(key, nbtSource.getInt(key));
     }
 
-    private static void copyTagCompound(NBTTagCompound nbtDst, NBTTagCompound nbtSource, String key){
-        NBTBase tag = nbtSource.getTag(key);
+    private static void copyTagCompound(CompoundNBT nbtDst, CompoundNBT nbtSource, String key){
+        INBT tag = nbtSource.get(key);
         if(tag == null) return;
-        nbtDst.setTag(key, nbtSource.getTag(key));
+        nbtDst.put(key, nbtSource.get(key));
     }
 }

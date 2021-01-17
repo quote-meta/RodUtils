@@ -16,6 +16,7 @@ public class ConfigHandler {
     public static boolean isDebugging = false;
     public static int rodCloneMaxLength = 64;
     public static int rodReincarnationMaxLength = 64;
+    public static int rodMeasurementMaxLength = 50;
     public static boolean rodReincarnationInitialFreeBuild = true;
     
     public void load(File file){
@@ -24,6 +25,7 @@ public class ConfigHandler {
         isDebugging = loadPropBool("debug", isDebugging);
         rodCloneMaxLength = loadPropInt("rodClone.maxLength", rodCloneMaxLength);
         rodReincarnationMaxLength = loadPropInt("rodReincarnation.maxLength", rodCloneMaxLength);
+        rodMeasurementMaxLength = loadPropInt("rodMeasurement.maxLength", rodMeasurementMaxLength);
 
         if(config.hasChanged()) config.save();
     }

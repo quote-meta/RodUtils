@@ -1,25 +1,23 @@
 package quote.fsrod.common.item.utils;
 
-import net.minecraft.util.text.TextFormatting;
+public class EnumModRarity {
+    // LEGENDARY(TextFormatting.GOLD, "Legendary");
 
-public enum EnumModRarity implements net.minecraftforge.common.IRarity {
-    LEGENDARY(TextFormatting.GOLD, "Legendary");
+    // public final TextFormatting rarityColor;
+    // public final String rarityName;
 
-    public final TextFormatting rarityColor;
-    public final String rarityName;
+    // private EnumModRarity(TextFormatting color, String name){
+    //     this.rarityColor = color;
+    //     this.rarityName = name;
+    // }
 
-    private EnumModRarity(TextFormatting color, String name){
-        this.rarityColor = color;
-        this.rarityName = name;
-    }
+    // @Override
+    // public TextFormatting getColor(){
+    //     return this.rarityColor;
+    // }
 
-    @Override
-    public TextFormatting getColor(){
-        return this.rarityColor;
-    }
-
-    @Override
-    public String getName(){
-        return this.rarityName;
-    } 
+    // @Override
+    // public String getName(){
+    //     return this.rarityName;
+    // } 
 }

@@ -7,16 +7,14 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-import javax.annotation.Nonnull;
-
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing.Axis;
+import net.minecraft.util.Direction.Axis;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 
 public final class ModUtils {
 
@@ -43,23 +41,35 @@ public final class ModUtils {
         return radian / (float)(2*Math.PI/360);
     }
 
-    public static int searchEntityIDByUUIDFromList(UUID uuid, List list){
-        for (Object obj : list) {
-            if(obj instanceof Entity){
-                Entity entity = (Entity)obj;
-                if(uuid.equals(entity.getUniqueID())){
-                    int id = entity.getEntityId();
-                    return id;
-                }
+    public static int searchEntityIDByUUIDFromList(UUID uuid, List<? extends Entity> list){
+        for (Entity entity : list) {
+            if(uuid.equals(entity.getUniqueID())){
+                return entity.getEntityId();
+            }
+        }
+        return -1;
+    }
+
+    public static int searchEntityIDByUUIDFromIterable(UUID uuid, Iterable<Entity> iterable){
+        for (Entity entity : iterable) {
+            if(uuid.equals(entity.getUniqueID())){
+                return entity.getEntityId();
             }
         }
         return -1;
     }
 
     public static int searchIDfromEntityAndPlayerbyUUID(UUID uuid, World world){
-        int id = -1;
-        if((id=searchEntityIDByUUIDFromList(uuid,world.playerEntities)) != -1)return id;
-        if((id=searchEntityIDByUUIDFromList(uuid,world.loadedEntityList)) != -1)return id;
+        if(world instanceof ServerWorld){
+            Entity entity = ((ServerWorld)world).getEntityByUuid(uuid);
+            return entity.getEntityId();
+        }
+        if(world instanceof ClientWorld){
+            int id = -1;
+            if((id=searchEntityIDByUUIDFromList(uuid, world.getPlayers())) != -1)return id;
+            if((id=searchEntityIDByUUIDFromIterable(uuid, ((ClientWorld)world).getAllEntities())) != -1)return id;
+        }
+
         return -1;
     }
 
@@ -70,16 +80,6 @@ public final class ModUtils {
             * MathHelper.cos(pitchDegree / 180.0f * (float) Math.PI)));
         double dy = ((double) (-MathHelper.sin(pitchDegree / 180.0f * (float) Math.PI)));
         return new Vec3d(dx, dy, dz);
-    }
-
-    @Nonnull
-    public static NBTTagCompound getTagThoughAbsent(ItemStack stack){
-        NBTTagCompound tag = stack.getTagCompound();
-        if(tag == null){
-            tag = new NBTTagCompound();
-            stack.setTagCompound(tag);
-        }
-        return tag;
     }
 
     public static int encodeRGB(int r, int g, int b){
@@ -151,7 +151,7 @@ public final class ModUtils {
             for (double j : arrayY) {
                 for (double k : arrayZ) {
                     Vec3d cubedCoordinate = new Vec3d(i, j, k);
-                    if (cubedCoordinate.lengthVector() <= range){
+                    if (cubedCoordinate.length() <= range){
                         listCoordinate.add(
                             new Vec3i(cubedCoordinate.x + x, cubedCoordinate.y + y, cubedCoordinate.z + z)
                         );
@@ -192,7 +192,7 @@ public final class ModUtils {
             for (double j : arrayY) {
                 for (double k : arrayZ) {
                     Vec3d cubedCoordinate = new Vec3d(i, j, k);
-                    double d = cubedCoordinate.lengthVector();
+                    double d = cubedCoordinate.length();
                     if (d <= range){
                         mapCoordinateDistance.put(
                             new Vec3i(cubedCoordinate.x + x, cubedCoordinate.y + y, cubedCoordinate.z + z), d
@@ -221,7 +221,7 @@ public final class ModUtils {
             for (double j : array) {
                 for (double k : array) {
                     Vec3d cubedCoordinate = new Vec3d(i, j, k);
-                    if (cubedCoordinate.lengthVector() <= range){
+                    if (cubedCoordinate.length() <= range){
                         listCoordinate.add(
                             new Vec3i(cubedCoordinate.x + x, cubedCoordinate.y + y, cubedCoordinate.z + z)
                         );

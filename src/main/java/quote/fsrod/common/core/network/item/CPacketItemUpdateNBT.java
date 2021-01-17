@@ -1,60 +1,48 @@
 package quote.fsrod.common.core.network.item;
 
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import quote.fsrod.common.core.utils.ModUtils;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.network.NetworkEvent;
 import quote.fsrod.common.item.utils.IItemHasUUID;
 
 // HACK: サーバとのアイテムの同期がずれると危険かもしれない
-public class CPacketItemUpdateNBT implements IMessage {
+public class CPacketItemUpdateNBT {
 
-    private NBTTagCompound nbtMerge;
+    private CompoundNBT nbtMerge;
     private UUID uuid;
     private Operation operation;
 
-    public CPacketItemUpdateNBT() {
-    }
-
-    public CPacketItemUpdateNBT(NBTTagCompound nbtMerge, @Nonnull UUID uuid, Operation operation) {
+    public CPacketItemUpdateNBT(CompoundNBT nbtMerge, @Nonnull UUID uuid, Operation operation) {
         this.nbtMerge = nbtMerge;
         this.uuid = uuid;
         this.operation = operation;
     }
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        nbtMerge = ByteBufUtils.readTag(buf);
-        uuid = UUID.fromString(ByteBufUtils.readUTF8String(buf));
-        operation = Operation.values()[buf.readInt()];
+    public static CPacketItemUpdateNBT decode(PacketBuffer buf) {
+        return new CPacketItemUpdateNBT(
+            buf.readCompoundTag(),
+            buf.readUniqueId(),
+            Operation.values()[buf.readInt()]
+        );
     }
 
-    @Override
-    public void toBytes(ByteBuf buf) {
-        ByteBufUtils.writeTag(buf, nbtMerge);
-        ByteBufUtils.writeUTF8String(buf, uuid.toString());
-        buf.writeInt(operation.ordinal());
+    public static void encode(CPacketItemUpdateNBT msg, PacketBuffer buf) {
+        buf.writeCompoundTag(msg.nbtMerge);
+        buf.writeUniqueId(msg.uuid);
+        buf.writeInt(msg.operation.ordinal());
     }
 
-    public static class Handler implements IMessageHandler<CPacketItemUpdateNBT, IMessage> {
-
-        @Override
-        public IMessage onMessage(CPacketItemUpdateNBT message, MessageContext ctx) {
-            if (ctx.side.isClient()) return null;
-            MinecraftServer ms = FMLCommonHandler.instance().getMinecraftServerInstance();
-            ms.addScheduledTask(() -> {
-                EntityPlayer player = ctx.getServerHandler().player;
+    public static void handle(CPacketItemUpdateNBT message, Supplier<NetworkEvent.Context> ctx){
+        if (ctx.get().getDirection().getReceptionSide().isServer()){
+            ctx.get().enqueueWork(() ->{
+                PlayerEntity player = ctx.get().getSender();
                 int size = player.inventory.getSizeInventory();
                 for(int i = 0; i < size; i++){
                     ItemStack stack = player.inventory.getStackInSlot(i);
@@ -66,27 +54,26 @@ public class CPacketItemUpdateNBT implements IMessage {
                         }
                     }
                 }
-            }
-            );
-            return null;
+            });
+            ctx.get().setPacketHandled(true);
         }
+    }
 
-        private void handleUpdateNBT(ItemStack stack, NBTTagCompound tag, Operation operation){
-            NBTTagCompound nbt = ModUtils.getTagThoughAbsent(stack);
-            switch (operation) {
-            case ADD:
-                nbt.merge(tag);
-                break;
-                
-            case REMOVE:
-                for (String key : tag.getKeySet()) {
-                    nbt.removeTag(key);
-                }
-                break;
-
-            default:
-                break;
+    private static void handleUpdateNBT(ItemStack stack, CompoundNBT tag, Operation operation){
+        CompoundNBT nbt = stack.getOrCreateTag();
+        switch (operation) {
+        case ADD:
+            nbt.merge(tag);
+            break;
+            
+        case REMOVE:
+            for (String key : tag.keySet()) {
+                nbt.remove(key);
             }
+            break;
+
+        default:
+            break;
         }
     }
 

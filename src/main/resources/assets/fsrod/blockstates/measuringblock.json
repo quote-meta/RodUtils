@@ -1,0 +1,37 @@
+{
+    "variants": {
+        "variant=num_0": {
+            "model": "fsrod:measuring_block_0"
+        },
+        "variant=num_1": {
+            "model": "fsrod:measuring_block_1"
+        },
+        "variant=num_2": {
+            "model": "fsrod:measuring_block_2"
+        },
+        "variant=num_3": {
+            "model": "fsrod:measuring_block_3"
+        },
+        "variant=num_4": {
+            "model": "fsrod:measuring_block_4"
+        },
+        "variant=num_5": {
+            "model": "fsrod:measuring_block_5"
+        },
+        "variant=num_6": {
+            "model": "fsrod:measuring_block_6"
+        },
+        "variant=num_7": {
+            "model": "fsrod:measuring_block_7"
+        },
+        "variant=num_8": {
+            "model": "fsrod:measuring_block_8"
+        },
+        "variant=num_9": {
+            "model": "fsrod:measuring_block_9"
+        },
+        "variant=deleting": {
+            "model": "fsrod:measuring_block_deleting"
+        }
+    }
+}

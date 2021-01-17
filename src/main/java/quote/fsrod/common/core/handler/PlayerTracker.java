@@ -1,11 +1,11 @@
 package quote.fsrod.common.core.handler;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import quote.fsrod.client.core.helper.RodCloneHelper;
 import quote.fsrod.client.core.helper.RodReincarnationHelper;
 import quote.fsrod.common.item.ModItems;
@@ -19,7 +19,7 @@ public class PlayerTracker {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onChatMessage(ServerChatEvent event){
-        EntityPlayer player = event.getPlayer();
+        PlayerEntity player = event.getPlayer();
         if(!player.world.isRemote){
             if(player.getHeldItemMainhand().getItem() == ModItems.rodReincarnation){
                 RodReincarnationHelper.setFileName(player.getHeldItemMainhand(), event.getMessage(), player);
@@ -30,7 +30,7 @@ public class PlayerTracker {
 
     @SubscribeEvent
     public void onRightClickItem(RightClickItem event){
-        EntityPlayer player = event.getEntityPlayer();
+        PlayerEntity player = event.getPlayer();
         ItemStack stackMainHand = player.getHeldItemMainhand();
 
         if(player.world.isRemote && (ItemRodClone.isRodClone(stackMainHand) || ItemRodClone.isRodTransfer(stackMainHand))) {

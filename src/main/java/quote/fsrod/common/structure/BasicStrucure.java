@@ -3,12 +3,12 @@ package quote.fsrod.common.structure;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagInt;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.IntNBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
@@ -26,12 +26,12 @@ public class BasicStrucure implements IStructure {
     private int sizeX;
     private int sizeY;
     private int sizeZ;
-    private List<IBlockState> states;
+    private List<BlockState> states;
     private int[] stateNums;
 
     private ResourceLocation path;
 
-    public BasicStrucure(NBTTagCompound nbt, ResourceLocation path) {
+    public BasicStrucure(CompoundNBT nbt, ResourceLocation path) {
         deserializeNBT(nbt);
         this.path = path;
     }
@@ -55,7 +55,7 @@ public class BasicStrucure implements IStructure {
             if (world.isAirBlock(src)) {
                 stateNumsList.add(0);
             } else {
-                IBlockState blockState = world.getBlockState(src);
+                BlockState blockState = world.getBlockState(src);
 
                 int stateNum = states.indexOf(blockState);
                 if (stateNum == -1) {
@@ -86,7 +86,7 @@ public class BasicStrucure implements IStructure {
     }
 
     @Override
-    public List<IBlockState> getStates() {
+    public List<BlockState> getStates() {
         return states;
     }
 
@@ -96,60 +96,59 @@ public class BasicStrucure implements IStructure {
     }
 
     @Override
-    public IBlockState getStateAt(int x, int y, int z, Rotation rotation) {
+    public BlockState getStateAt(int x, int y, int z, Rotation rotation) {
         int index = x + y * sizeX + z * sizeX * sizeY;
         if(index < 0 || index >= stateNums.length) return Blocks.AIR.getDefaultState();
         int stateNum = stateNums[index];
-        IBlockState state = states.get(stateNum);
+        BlockState state = states.get(stateNum);
         return state != null ? state : Blocks.AIR.getDefaultState();
     }
 
     @Override
-    public IBlockState getStateAt(BlockPos pos, Rotation rotation) {
+    public BlockState getStateAt(BlockPos pos, Rotation rotation) {
         return getStateAt(pos.getX(), pos.getY(), pos.getZ(), rotation);
     }
 
     @Override
-    public NBTTagCompound serializeNBT() {
-        NBTTagCompound nbt = new NBTTagCompound();
+    public CompoundNBT serializeNBT() {
+        CompoundNBT nbt = new CompoundNBT();
 
-        NBTTagList nbtStates = new NBTTagList();
-        NBTTagList nbtStateNums = new NBTTagList();
+        ListNBT nbtStates = new ListNBT();
+        ListNBT nbtStateNums = new ListNBT();
 
-        for (IBlockState state : states) {
-            NBTTagCompound nbtState = new NBTTagCompound();
-            NBTUtil.writeBlockState(nbtState, state);
-            nbtStates.appendTag(nbtState);
+        for (BlockState state : states) {
+            CompoundNBT nbtState = NBTUtil.writeBlockState(state);
+            nbtStates.add(nbtState);
         }
 
         for (int stateNum : stateNums) {
-            nbtStateNums.appendTag(new NBTTagInt(stateNum));
+            nbtStateNums.add(new IntNBT(stateNum));
         }
 
-        nbt.setInteger(NBT_DATA_SIZE_X, sizeX);
-        nbt.setInteger(NBT_DATA_SIZE_Y, sizeY);
-        nbt.setInteger(NBT_DATA_SIZE_Z, sizeZ);
-        nbt.setTag(NBT_DATA_STATES, nbtStates);
-        nbt.setTag(NBT_DATA_STATE_NUMS, nbtStateNums);
+        nbt.putInt(NBT_DATA_SIZE_X, sizeX);
+        nbt.putInt(NBT_DATA_SIZE_Y, sizeY);
+        nbt.putInt(NBT_DATA_SIZE_Z, sizeZ);
+        nbt.put(NBT_DATA_STATES, nbtStates);
+        nbt.put(NBT_DATA_STATE_NUMS, nbtStateNums);
 
         return nbt;
     }
 
     @Override
-    public void deserializeNBT(NBTTagCompound nbt) {
-        sizeX = nbt.getInteger(NBT_DATA_SIZE_X);
-        sizeY = nbt.getInteger(NBT_DATA_SIZE_Y);
-        sizeZ = nbt.getInteger(NBT_DATA_SIZE_Z);
-        NBTTagList nbtStates = nbt.getTagList(NBT_DATA_STATES, 10);
-        NBTTagList nbtStateNums = nbt.getTagList(NBT_DATA_STATE_NUMS, 3);
+    public void deserializeNBT(CompoundNBT nbt) {
+        sizeX = nbt.getInt(NBT_DATA_SIZE_X);
+        sizeY = nbt.getInt(NBT_DATA_SIZE_Y);
+        sizeZ = nbt.getInt(NBT_DATA_SIZE_Z);
+        ListNBT nbtStates = nbt.getList(NBT_DATA_STATES, 10);
+        ListNBT nbtStateNums = nbt.getList(NBT_DATA_STATE_NUMS, 3);
 
         states = new ArrayList<>();
 
-        int stateMax = nbtStates.tagCount();
+        int stateMax = nbtStates.size();
         for (int num = 0; num < stateMax; num++) {
-            NBTBase tagState = nbtStates.get(num);
-            if (tagState instanceof NBTTagCompound) {
-                IBlockState state = NBTUtil.readBlockState((NBTTagCompound) tagState);
+            INBT tagState = nbtStates.get(num);
+            if (tagState instanceof CompoundNBT) {
+                BlockState state = NBTUtil.readBlockState((CompoundNBT) tagState);
                 states.add(state);
             } else {
                 states.add(Blocks.AIR.getDefaultState());
@@ -158,9 +157,9 @@ public class BasicStrucure implements IStructure {
 
         List<Integer> stateNumsList = new ArrayList<>();
 
-        int stateNumMax = nbtStateNums.tagCount();
+        int stateNumMax = nbtStateNums.size();
         for (int stateIndex = 0; stateIndex < stateNumMax; stateIndex++) {
-            stateNumsList.add(nbtStateNums.getIntAt(stateIndex));
+            stateNumsList.add(nbtStateNums.getInt(stateIndex));
         }
 
         stateNums = stateNumsList.stream().mapToInt(Integer::intValue).toArray();
