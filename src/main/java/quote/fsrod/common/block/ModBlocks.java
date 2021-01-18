@@ -3,8 +3,8 @@ package quote.fsrod.common.block;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -16,7 +16,8 @@ import quote.fsrod.common.lib.LibBlockName;
 import quote.fsrod.common.lib.LibMisc;
 
 @Mod.EventBusSubscriber(modid = LibMisc.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
-public class ModBlocks {
+@ObjectHolder(LibMisc.MOD_ID)
+public final class ModBlocks {
     private ModBlocks(){}
 
     @ObjectHolder(LibBlockName.MEASURING_BLOCK + "0")    public static Block blockMeasurement0;
@@ -39,32 +40,35 @@ public class ModBlocks {
         blockRegistry = event.getRegistry();
         Block.Properties builder = Block.Properties.create(Material.ROCK).doesNotBlockMovement().hardnessAndResistance(0).sound(SoundType.STONE);
         for (int i = 0; i <= 10; i++) {
-            register(new BlockMeasurement(i, builder), LibBlockName.MEASURING_BLOCK + "i");
+            register(new BlockMeasurement(i, builder), LibBlockName.MEASURING_BLOCK + i);
         }
     }
 
     @SubscribeEvent
     public static void registerItemBlocks(RegistryEvent.Register<Item> event){
         itemRegistry = event.getRegistry();
-        
-        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement0, ModItems.defaultBuilder()));
-        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement1, ModItems.defaultBuilder()));
-        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement2, ModItems.defaultBuilder()));
-        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement3, ModItems.defaultBuilder()));
-        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement4, ModItems.defaultBuilder()));
-        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement5, ModItems.defaultBuilder()));
-        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement6, ModItems.defaultBuilder()));
-        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement7, ModItems.defaultBuilder()));
-        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement8, ModItems.defaultBuilder()));
-        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement9, ModItems.defaultBuilder()));
-        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement10, ModItems.defaultBuilder()));
+        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement0, ModItems.defaultBuilder()), blockMeasurement0.getRegistryName());
+        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement1, ModItems.defaultBuilder()), blockMeasurement1.getRegistryName());
+        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement2, ModItems.defaultBuilder()), blockMeasurement2.getRegistryName());
+        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement3, ModItems.defaultBuilder()), blockMeasurement3.getRegistryName());
+        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement4, ModItems.defaultBuilder()), blockMeasurement4.getRegistryName());
+        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement5, ModItems.defaultBuilder()), blockMeasurement5.getRegistryName());
+        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement6, ModItems.defaultBuilder()), blockMeasurement6.getRegistryName());
+        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement7, ModItems.defaultBuilder()), blockMeasurement7.getRegistryName());
+        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement8, ModItems.defaultBuilder()), blockMeasurement8.getRegistryName());
+        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement9, ModItems.defaultBuilder()), blockMeasurement9.getRegistryName());
+        registerItemBlock(new ItemBlockHasMetadata(blockMeasurement10, ModItems.defaultBuilder()),blockMeasurement10.getRegistryName());
     }
 
     private static void register(Block block, String name){
         blockRegistry.register(block.setRegistryName(LibMisc.MOD_ID, name));
     }
 
-    private static void registerItemBlock(Item itemBlock){
-        itemRegistry.register(itemBlock);
+    private static void registerItemBlock(Item itemBlock, ResourceLocation path){
+        itemRegistry.register(itemBlock.setRegistryName(path));
+    }
+
+    private static void registerItemBlock(Item itemBlock, String name){
+        registerItemBlock(itemBlock, new ResourceLocation(LibMisc.MOD_ID, name));
     }
 }

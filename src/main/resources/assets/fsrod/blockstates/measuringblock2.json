@@ -1,0 +1,7 @@
+{
+    "variants": {
+        "variant=num_2": {
+            "model": "fsrod:measuring_block_2"
+        }
+    }
+}

@@ -39,6 +39,7 @@ import quote.fsrod.common.core.network.item.CPacketItemUpdateNBT;
 import quote.fsrod.common.core.network.item.CPacketRodCloneStartBuilding;
 import quote.fsrod.common.core.utils.ChatUtils;
 import quote.fsrod.common.item.rod.ItemRodClone;
+import quote.fsrod.common.item.rod.ItemRodTransfer;
 import quote.fsrod.common.item.utils.IItemHasUUID;
 
 public class RodCloneHelper {
@@ -53,7 +54,7 @@ public class RodCloneHelper {
             UUID uuid = IItemHasUUID.getUUID(stack);
 
             int oldReach = nbt.getInt(ItemRodClone.NBT_REACH_DISTANCE);
-            int newReach = (int)MathHelper.clamp(oldReach + event.getScrollDelta() / 120, 2, 10);
+            int newReach = (int)MathHelper.clamp(oldReach + event.getScrollDelta(), 2, 10);
             nbt.putInt(ItemRodClone.NBT_REACH_DISTANCE, newReach);
 
             ModPacketHandler.INSTANCE.sendToServer(new CPacketItemUpdateNBT(nbt, uuid, CPacketItemUpdateNBT.Operation.ADD));
@@ -93,7 +94,7 @@ public class RodCloneHelper {
             int sizeZ = Math.abs((blockPos.getZ() - blockPosNear.getZ()));
             int maxLength = ConfigHandler.COMMON.rodCloneMaxLength.get();
             if(sizeX > maxLength || sizeY > maxLength || sizeZ > maxLength){
-                ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodClone.warning.rangeTooLarge", maxLength);
+                ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodclone.warning.rangeTooLarge", maxLength);
                 return;
             }
             tag.put(ItemRodClone.NBT_POINT_END, NBTUtil.writeBlockPos(blockPos));
@@ -128,7 +129,7 @@ public class RodCloneHelper {
             if(ItemRodClone.isRodClone(stack)){
                 ModPacketHandler.INSTANCE.sendToServer(new CPacketRodCloneStartBuilding(CPacketRodCloneStartBuilding.Operation.TRUE_BUILD, blockPosNear, blockPosEnd, blockPosScheduled, rotation));
             }
-            else if(ItemRodClone.isRodTransfer(stack)){
+            else if(ItemRodTransfer.isRodTransfer(stack)){
                 ModPacketHandler.INSTANCE.sendToServer(new CPacketRodCloneStartBuilding(CPacketRodCloneStartBuilding.Operation.TRANSFER, blockPosNear, blockPosEnd, blockPosScheduled, rotation));
             }
         }
@@ -149,7 +150,7 @@ public class RodCloneHelper {
         else{
             sendRemoveNBTTagToServer(stack, ItemRodClone.NBT_POINT_NEAR);
             sendRemoveNBTTagToServer(stack, ItemRodClone.NBT_POINT_END);
-            ChatUtils.sendTranslatedChat(player, TextFormatting.WHITE, "fs.message.rodClone.use.reset");
+            ChatUtils.sendTranslatedChat(player, TextFormatting.WHITE, "fs.message.rodclone.use.reset");
         }
     }
 
@@ -182,7 +183,7 @@ public class RodCloneHelper {
         Direction facingDst = rotation.rotate(getFacingAABB(posNear, posEnd));
         AxisAlignedBB aabb = getScheduledAABB(posNear, posEnd, facingDst, posDst);
         if(aabb.intersects(new AxisAlignedBB(posNear, posEnd).expand(1, 1, 1))){
-            ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodClone.warning.rangesInterfere");
+            ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodclone.warning.rangesInterfere");
             return;
         }
 
@@ -218,7 +219,7 @@ public class RodCloneHelper {
         Direction facingDst = rotation.rotate(getFacingAABB(posNear, posEnd));
         AxisAlignedBB aabb = getScheduledAABB(posNear, posEnd, facingDst, posDst);
         if(aabb.intersects(new AxisAlignedBB(posNear, posEnd).expand(1, 1, 1))){
-            ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodClone.warning.rangesInterfere");
+            ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodclone.warning.rangesInterfere");
             return;
         }
 
@@ -404,6 +405,7 @@ public class RodCloneHelper {
             Vec3d vec3d2 = vec3d.add(vec3d1);
             objectMouseOver = player.world.rayTraceBlocks(new RayTraceContext(vec3d, vec3d2, BlockMode.COLLIDER, FluidMode.NONE, player));
             if(objectMouseOver != null && objectMouseOver.getType() == Type.BLOCK){
+                //Todo: 校正が必要
                 blockPos = new BlockPos(objectMouseOver.getHitVec());
             }
             else{

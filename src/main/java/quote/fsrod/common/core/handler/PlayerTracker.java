@@ -11,6 +11,7 @@ import quote.fsrod.client.core.helper.RodReincarnationHelper;
 import quote.fsrod.common.item.ModItems;
 import quote.fsrod.common.item.rod.ItemRodClone;
 import quote.fsrod.common.item.rod.ItemRodReincarnation;
+import quote.fsrod.common.item.rod.ItemRodTransfer;
 
 public class PlayerTracker {
     public static final PlayerTracker INSTANCE = new PlayerTracker();
@@ -33,7 +34,7 @@ public class PlayerTracker {
         PlayerEntity player = event.getPlayer();
         ItemStack stackMainHand = player.getHeldItemMainhand();
 
-        if(player.world.isRemote && (ItemRodClone.isRodClone(stackMainHand) || ItemRodClone.isRodTransfer(stackMainHand))) {
+        if(player.world.isRemote && (ItemRodClone.isRodClone(stackMainHand) || ItemRodTransfer.isRodTransfer(stackMainHand))) {
             RodCloneHelper.onRightClickItem(stackMainHand, player);
         }
         if(player.world.isRemote && ItemRodReincarnation.isRodReincarnation(stackMainHand)) {

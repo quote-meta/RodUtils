@@ -21,6 +21,7 @@ import quote.fsrod.client.core.helper.RodReincarnationHelper;
 import quote.fsrod.common.RodUtils;
 import quote.fsrod.common.item.rod.ItemRodClone;
 import quote.fsrod.common.item.rod.ItemRodReincarnation;
+import quote.fsrod.common.item.rod.ItemRodTransfer;
 import quote.fsrod.common.item.utils.IItemHasSplitNBTList;
 
 @OnlyIn(Dist.CLIENT)
@@ -35,7 +36,7 @@ public class ModRenderWorldHandler {
         PlayerEntity player = RodUtils.proxy.getEntityPlayerInstance();
         ItemStack stackMainHand = player.getHeldItemMainhand();
         float partialTicks = event.getPartialTicks();
-        if(ItemRodClone.isRodClone(stackMainHand) || ItemRodClone.isRodTransfer(stackMainHand)){
+        if(ItemRodClone.isRodClone(stackMainHand) || ItemRodTransfer.isRodTransfer(stackMainHand)){
 
             Integer dimension = RodCloneHelper.getDimension(stackMainHand);
             BlockPos blockPosSeeing = RodCloneHelper.getBlockPosSeeing(stackMainHand, player, partialTicks);

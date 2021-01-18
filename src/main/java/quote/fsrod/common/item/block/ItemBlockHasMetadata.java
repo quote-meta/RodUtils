@@ -12,6 +12,6 @@ public class ItemBlockHasMetadata extends AbstractModItemBlock {
 
     @Override
     public String getTranslationKey(ItemStack stack) {
-        return super.getTranslationKey(stack) + getDamage(stack);
+        return super.getTranslationKey(stack);
     }
 }

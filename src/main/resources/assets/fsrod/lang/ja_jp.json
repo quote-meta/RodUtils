@@ -1,0 +1,37 @@
+{
+    "block.fsrod.measuringblock0": "測定ブロック: 0",
+    "block.fsrod.measuringblock1": "測定ブロック: 1",
+    "block.fsrod.measuringblock2": "測定ブロック: 2",
+    "block.fsrod.measuringblock3": "測定ブロック: 3",
+    "block.fsrod.measuringblock4": "測定ブロック: 4",
+    "block.fsrod.measuringblock5": "測定ブロック: 5",
+    "block.fsrod.measuringblock6": "測定ブロック: 6",
+    "block.fsrod.measuringblock7": "測定ブロック: 7",
+    "block.fsrod.measuringblock8": "測定ブロック: 8",
+    "block.fsrod.measuringblock9": "測定ブロック: 9",
+    "block.fsrod.measuringblock10": "測定ブロック: Void",
+
+    "item.fsrod.rodclone": "コピペの杖",
+    "item.fsrod.rodtransfer": "引っ越しの杖",
+    "item.fsrod.rodreincarnation": "輪廻の杖",
+    "item.fsrod.rodmeasurement": "測定の杖",
+
+    "item.fsrod.rodreincarnation.info": "全てを失うことなく転生できたら・・・？",
+    "item.fsrod.rodreincarnation.info.nofilename": "§a手に持って何かを呟かなければ・・・",
+    "item.fsrod.rodreincarnation.info.filename": "%1$sに紐づけられている",
+
+    "fs.message.rodclone.use.reset": "対象範囲をリセットしました",
+    "fs.message.rodclone.warning.rangesInterfere": "2つの範囲が被っています",
+    "fs.message.rodclone.warning.rangeTooLarge": "範囲が大きすぎます（上限サイズ：%1$d）",
+
+    "fs.message.rodreincarnation.use.reset": "対象範囲をリセットしました",
+    "fs.message.rodreincarnation.use.save.success": "この空間を魂に刻み込んだ",
+    "fs.message.rodreincarnation.use.save.failed": "空間を魂に刻み込めなかった",
+    "fs.message.rodreincarnation.use.load.success": "魂に焼き付いた空間が杖に宿った",
+    "fs.message.rodreincarnation.use.load.failed": "空間を杖に宿せなかった",
+    "fs.message.rodreincarnation.use.build.failed": "空間を呼び出せなかった",
+    "fs.message.rodreincarnation.warning.rangeTooLarge": "範囲が大きすぎます（上限サイズ：%1$d）",
+    "fs.message.rodreincarnation.warning.noFileName": "ファイル名が設定されていません",
+    "fs.message.rodreincarnation.warning.clickToSave": "セーブするには始端のブロックに杖を使用してください",
+    "fs.message.rodreincarnation.warning.invalidFileName": "ファイル名が不正です"
+}

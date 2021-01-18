@@ -1,0 +1,37 @@
+{
+    "block.fsrod.measuringblock0": "Measuring Block: 0",
+    "block.fsrod.measuringblock1": "Measuring Block: 1",
+    "block.fsrod.measuringblock2": "Measuring Block: 2",
+    "block.fsrod.measuringblock3": "Measuring Block: 3",
+    "block.fsrod.measuringblock4": "Measuring Block: 4",
+    "block.fsrod.measuringblock5": "Measuring Block: 5",
+    "block.fsrod.measuringblock6": "Measuring Block: 6",
+    "block.fsrod.measuringblock7": "Measuring Block: 7",
+    "block.fsrod.measuringblock8": "Measuring Block: 8",
+    "block.fsrod.measuringblock9": "Measuring Block: 9",
+    "block.fsrod.measuringblock10": "Measuring Block: Void",
+
+    "item.fsrod.rodclone": "Rod of Clone",
+    "item.fsrod.rodtransfer": "Rod of Transfer",
+    "item.fsrod.rodreincarnation": "Rod of Reincarnation",
+    "item.fsrod.rodmeasurement": "Rod of Measurement",
+
+    "item.fsrod.rodreincarnation.info": "If you could be reincarnated without losing everything...?",
+    "item.fsrod.rodreincarnation.info.nofilename": "§aI have to hold it in my hand and mutter something...",
+    "item.fsrod.rodreincarnation.info.filename": "Bound by: %1$s",
+
+    "fs.message.rodclone.use.reset": "Reset the source range",
+    "fs.message.rodclone.warning.rangesInterfere": "The Two ranges interfere",
+    "fs.message.rodclone.warning.rangeTooLarge": "The range is too large (upper size: %1$d)",
+
+    "fs.message.rodreincarnation.use.reset": "Reset the source range", 
+    "fs.message.rodreincarnation.use.save.success": "I've bound this space to my soul...", 
+    "fs.message.rodreincarnation.use.save.failed": "I couldn't bind the space to my soul",
+    "fs.message.rodreincarnation.use.load.success": "A soul-bound space inhabited the wand",
+    "fs.message.rodreincarnation.use.load.failed": "I couldn't get the wand to hold the space",
+    "fs.message.rodreincarnation.use.build.failed": "I couldn't call up the space",
+    "fs.message.rodreincarnation.warning.rangeTooLarge": "The range is too large (upper size: %1$d)",
+    "fs.message.rodreincarnation.warning.noFileName": "File name is not set",
+    "fs.message.rodreincarnation.warning.clickToSave": "Use the rod on the starting block to save",
+    "fs.message.rodreincarnation.warning.invalidFileName": "File name is invalid"
+}

@@ -10,6 +10,7 @@ import net.minecraftforge.registries.ObjectHolder;
 import quote.fsrod.common.item.rod.ItemRodClone;
 import quote.fsrod.common.item.rod.ItemRodMeasurement;
 import quote.fsrod.common.item.rod.ItemRodReincarnation;
+import quote.fsrod.common.item.rod.ItemRodTransfer;
 import quote.fsrod.common.lib.LibItemName;
 import quote.fsrod.common.lib.LibMisc;
 
@@ -17,6 +18,7 @@ import quote.fsrod.common.lib.LibMisc;
 @ObjectHolder(LibMisc.MOD_ID)
 public final class ModItems {
     @ObjectHolder(LibItemName.ROD_CLONE)            public static Item rodClone;
+    @ObjectHolder(LibItemName.ROD_TRANSFER)         public static Item rodTransfer;
     @ObjectHolder(LibItemName.ROD_REINCARNATION)    public static Item rodReincarnation;
     @ObjectHolder(LibItemName.ROD_MEASUREMENT)      public static Item rodMeasurement;
 
@@ -31,11 +33,12 @@ public final class ModItems {
         registry = event.getRegistry();
 
         register(new ItemRodClone(defaultBuilder()), LibItemName.ROD_CLONE);
+        register(new ItemRodTransfer(defaultBuilder()), LibItemName.ROD_TRANSFER);
         register(new ItemRodReincarnation(defaultBuilder()), LibItemName.ROD_REINCARNATION);
         register(new ItemRodMeasurement(defaultBuilder()), LibItemName.ROD_MEASUREMENT);
     }
 
     private static void register(Item item, String name){
-        registry.register(item.setRegistryName(LibMisc.MOD_ID, name));
+        registry.register(item.setRegistryName(name));
     }
 }

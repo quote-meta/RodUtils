@@ -83,7 +83,7 @@ public class RodReincarnationHelper {
         CompoundNBT tag = stack.getOrCreateTag();
 
         if(!hasFilePathNBT(stack)){
-            ChatUtils.sendTranslatedChat(player, TextFormatting.WHITE, "fs.message.rodReincarnation.warning.noFileName");
+            ChatUtils.sendTranslatedChat(player, TextFormatting.WHITE, "fs.message.rodreincarnation.warning.noFileName");
             return;
         }
         if(existsFile(stack)){
@@ -154,7 +154,7 @@ public class RodReincarnationHelper {
                 int sizeZ = Math.abs((blockPos.getZ() - blockPosNear.getZ()));
                 int maxLength = ConfigHandler.COMMON.rodReincarnationMaxLength.get();
                 if(sizeX > maxLength || sizeY > maxLength || sizeZ > maxLength){
-                    ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodReincarnation.warning.rangeTooLarge", maxLength);
+                    ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodreincarnation.warning.rangeTooLarge", maxLength);
                     return;
                 }
                 tag.put(ItemRodReincarnation.NBT_POINT_END, NBTUtil.writeBlockPos(blockPos));
@@ -169,7 +169,7 @@ public class RodReincarnationHelper {
                 handleSaving(player, blockPosNear, blockPosEnd, stack);
             }
             else{
-                ChatUtils.sendTranslatedChat(player, TextFormatting.WHITE, "fs.message.rodReincarnation.warning.clickToSave");
+                ChatUtils.sendTranslatedChat(player, TextFormatting.WHITE, "fs.message.rodreincarnation.warning.clickToSave");
             }
         }
     }
@@ -210,7 +210,7 @@ public class RodReincarnationHelper {
         else{
             sendRemoveNBTTagToServer(stack, ItemRodReincarnation.NBT_POINT_NEAR);
             sendRemoveNBTTagToServer(stack, ItemRodReincarnation.NBT_POINT_END);
-            ChatUtils.sendTranslatedChat(player, TextFormatting.WHITE, "fs.message.rodReincarnation.use.reset");
+            ChatUtils.sendTranslatedChat(player, TextFormatting.WHITE, "fs.message.rodreincarnation.use.reset");
         }
     }
 
@@ -242,7 +242,7 @@ public class RodReincarnationHelper {
 
         CompoundNBT tag = stackRod.getTag();
         if(tag == null || !tag.contains(ItemRodReincarnation.NBT_DATA)){
-            ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodReincarnation.build.failed");
+            ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodreincarnation.build.failed");
             return;
         }
         CompoundNBT tagData = tag.getCompound(ItemRodReincarnation.NBT_DATA);
@@ -298,7 +298,7 @@ public class RodReincarnationHelper {
     public static void handleloading(PlayerEntity player, ItemStack stack){
         CompoundNBT tag = loadNBT(stack);
         if(tag.isEmpty()){
-            ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodReincarnation.use.load.failed");
+            ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodreincarnation.use.load.failed");
             return;
         }
 
@@ -314,10 +314,10 @@ public class RodReincarnationHelper {
         CompoundNBT nbt = structure.serializeNBT();
         
         if(saveNBT(nbt, stack)){
-            ChatUtils.sendTranslatedChat(player, TextFormatting.GREEN, "fs.message.rodReincarnation.use.save.success");
+            ChatUtils.sendTranslatedChat(player, TextFormatting.GREEN, "fs.message.rodreincarnation.use.save.success");
         }
         else{
-            ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodReincarnation.use.save.failed");
+            ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodreincarnation.use.save.failed");
         }
     }
 
@@ -367,7 +367,7 @@ public class RodReincarnationHelper {
     public static void setFileName(ItemStack stack, String filename, @Nullable PlayerEntity player){
         if(filename.contains(" ") || filename.length() > 16){
             if(player != null){
-                ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodReincarnation.warning.invalidFileName");
+                ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodreincarnation.warning.invalidFileName");
             }
             return;
         }
@@ -482,6 +482,7 @@ public class RodReincarnationHelper {
             Vec3d vec3d2 = vec3d.add(vec3d1);
             objectMouseOver = player.world.rayTraceBlocks(new RayTraceContext(vec3d, vec3d2, BlockMode.COLLIDER, FluidMode.NONE, player));
             if(objectMouseOver != null && objectMouseOver.getType() == Type.BLOCK){
+                //Todo: 校正が必要
                 blockPos = new BlockPos(objectMouseOver.getHitVec());
             }
             else{

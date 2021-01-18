@@ -13,7 +13,7 @@ import quote.fsrod.common.item.AbstractModItem;
 import quote.fsrod.common.item.ModItems;
 import quote.fsrod.common.item.utils.IItemHasUUID;
 
-public class ItemRodClone extends AbstractModItem implements IItemHasUUID{
+public class ItemRodTransfer extends AbstractModItem implements IItemHasUUID{
 
     public static final String NBT_REACH_DISTANCE = "reachDistance";
     public static final String NBT_DIMENSION = "pointDimension";
@@ -22,10 +22,10 @@ public class ItemRodClone extends AbstractModItem implements IItemHasUUID{
     public static final String NBT_POINT_SCHEDULED = "pointScheduled";
     public static final String NBT_POINT_SCHEDULED_FACING = "pointScheduledFacing";
 
-    public ItemRodClone(Item.Properties properties) {
+    public ItemRodTransfer(Item.Properties properties) {
         super(properties.maxStackSize(1).rarity(Rarity.EPIC));
     }
-
+    
     @Override
     public void inventoryTick(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
         if(!worldIn.isRemote){
@@ -41,7 +41,7 @@ public class ItemRodClone extends AbstractModItem implements IItemHasUUID{
         super.inventoryTick(stack, worldIn, entityIn, itemSlot, isSelected);
     }
 
-    public static boolean isRodClone(ItemStack stack){
-        return stack != null && stack.getItem() == ModItems.rodClone;
+    public static boolean isRodTransfer(ItemStack stack){
+        return stack != null && stack.getItem() == ModItems.rodTransfer;
     }
 }

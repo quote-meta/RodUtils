@@ -9,6 +9,7 @@ import quote.fsrod.client.core.helper.RodReincarnationHelper;
 import quote.fsrod.common.RodUtils;
 import quote.fsrod.common.item.rod.ItemRodClone;
 import quote.fsrod.common.item.rod.ItemRodReincarnation;
+import quote.fsrod.common.item.rod.ItemRodTransfer;
 
 public class InputEventHandler {
     
@@ -17,7 +18,7 @@ public class InputEventHandler {
         PlayerEntity player = RodUtils.proxy.getEntityPlayerInstance();
         ItemStack stackMainHand = player.getHeldItemMainhand();
         
-        if(ItemRodClone.isRodClone(stackMainHand) || ItemRodClone.isRodTransfer(stackMainHand)) {
+        if(ItemRodClone.isRodClone(stackMainHand) || ItemRodTransfer.isRodTransfer(stackMainHand)) {
             RodCloneHelper.onMouseEvent(event, stackMainHand, player);
         }
         if(ItemRodReincarnation.isRodReincarnation(stackMainHand)){
