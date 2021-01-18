@@ -40,7 +40,7 @@ public final class ModBlocks {
     @SubscribeEvent
     public static void registerBlocks(RegistryEvent.Register<Block> event){
         blockRegistry = event.getRegistry();
-        Block.Properties builder = Block.Properties.create(Material.ROCK).doesNotBlockMovement().hardnessAndResistance(0).sound(SoundType.STONE);
+        Block.Properties builder = Block.Properties.create(Material.ROCK).hardnessAndResistance(0).sound(SoundType.STONE);
         for (int i = 0; i <= 10; i++) {
             register(new BlockMeasurement(i, builder), LibBlockName.MEASURING_BLOCK + i);
         }

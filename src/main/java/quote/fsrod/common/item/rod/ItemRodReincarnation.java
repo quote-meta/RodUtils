@@ -60,7 +60,7 @@ public class ItemRodReincarnation extends AbstractModItem implements IItemHasSpl
         CompoundNBT nbt = stack.getOrCreateTag();
         CompoundNBT nbtData = nbt.getCompound(NBT_DATA);
         nbtData.put(BasicStrucure.NBT_DATA_STATE_NUMS, nbtListMarged);
-        ChatUtils.sendTranslatedChat(player, TextFormatting.GREEN, "fs.message.rodReincarnation.use.load.success");
+        ChatUtils.sendTranslatedChat(player, TextFormatting.GREEN, "fs.message.rodreincarnation.use.load.success");
     }
 
     public static boolean isRodReincarnation(ItemStack stack) {

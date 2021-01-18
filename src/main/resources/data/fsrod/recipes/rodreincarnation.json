@@ -1,27 +1,28 @@
 {
-    "result": {
-        "item": "fsrod:rodReincarnation"
-    },
+    "type": "crafting_shaped",
     "pattern": [
         " DS",
-        "PGD",
+        "PMD",
         "GP "
     ],
-    "type": "forge:ore_shaped",
     "key": {
         "P": {
             "item": "minecraft:ender_pearl"
         },
         "D": {
-            "type": "forge:ore_dict",
-            "ore": "gemDiamond"
+            "tag": "forge:gems/diamond"
+        },
+        "M": {
+            "item": "fsrod:rodmeasurement"
         },
         "G": {
-            "type": "forge:ore_dict",
-            "ore": "ingotGold"
+            "tag": "forge:ingots/gold"
         },
         "S": {
             "item": "minecraft:nether_star"
         }
+    },
+    "result": {
+        "item": "fsrod:rodreincarnation"
     }
 }

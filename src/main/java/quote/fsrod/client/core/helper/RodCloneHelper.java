@@ -19,6 +19,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceContext.BlockMode;
@@ -405,8 +406,8 @@ public class RodCloneHelper {
             Vec3d vec3d2 = vec3d.add(vec3d1);
             objectMouseOver = player.world.rayTraceBlocks(new RayTraceContext(vec3d, vec3d2, BlockMode.COLLIDER, FluidMode.NONE, player));
             if(objectMouseOver != null && objectMouseOver.getType() == Type.BLOCK){
-                //Todo: 校正が必要
-                blockPos = new BlockPos(objectMouseOver.getHitVec());
+                BlockRayTraceResult blockraytraceresult = (BlockRayTraceResult)objectMouseOver;
+                blockPos = blockraytraceresult.getPos();
             }
             else{
                 blockPos = new BlockPos(vec3d2);
