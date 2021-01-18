@@ -70,7 +70,7 @@ public class RodReincarnationHelper {
             UUID uuid = IItemHasUUID.getUUID(stack);
 
             int oldReach = nbt.getInt(ItemRodReincarnation.NBT_REACH_DISTANCE);
-            int newReach = (int)MathHelper.clamp(oldReach + event.getScrollDelta() / 120, 2, 10);
+            int newReach = (int)MathHelper.clamp(oldReach + event.getScrollDelta(), 2, 10);
             nbt.putInt(ItemRodReincarnation.NBT_REACH_DISTANCE, newReach);
 
             ModPacketHandler.INSTANCE.sendToServer(new CPacketItemUpdateNBT(nbt, uuid, CPacketItemUpdateNBT.Operation.ADD));

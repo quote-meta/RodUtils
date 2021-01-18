@@ -1,5 +1,7 @@
 package quote.fsrod.common.block;
 
+import javax.annotation.Nonnull;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
@@ -70,5 +72,23 @@ public final class ModBlocks {
 
     private static void registerItemBlock(Item itemBlock, String name){
         registerItemBlock(itemBlock, new ResourceLocation(LibMisc.MOD_ID, name));
+    }
+
+    @Nonnull
+    public static Block getBlockMeasurement(BlockMeasurement.Type type){
+        switch (type) {
+			default:
+			case NUM_0: return blockMeasurement0;
+			case NUM_1: return blockMeasurement1;
+			case NUM_2: return blockMeasurement2;
+			case NUM_3: return blockMeasurement3;
+			case NUM_4: return blockMeasurement4;
+			case NUM_5: return blockMeasurement5;
+			case NUM_6: return blockMeasurement6;
+			case NUM_7: return blockMeasurement7;
+			case NUM_8: return blockMeasurement8;
+			case NUM_9: return blockMeasurement9;
+			case DELETING: return blockMeasurement10;
+        }
     }
 }

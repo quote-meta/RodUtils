@@ -1,7 +1,6 @@
 package quote.fsrod.common.core.network;
 
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import quote.fsrod.common.core.network.item.CPacketItemUpdateNBT;

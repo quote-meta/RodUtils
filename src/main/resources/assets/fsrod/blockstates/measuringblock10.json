@@ -1,7 +1,7 @@
 {
     "variants": {
-        "variant=deleting": {
-            "model": "fsrod:measuring_block_deleting"
+        "": {
+            "model": "fsrod:block/measuring_block_deleting"
         }
     }
 }

@@ -4,27 +4,19 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.state.EnumProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.util.IStringSerializable;
+import net.minecraft.entity.EntityType;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
 public class BlockMeasurement extends Block{
-    public static final EnumProperty<BlockMeasurement.Type> VARIANT = EnumProperty.<BlockMeasurement.Type>create("variant", BlockMeasurement.Type.class);
 
     public final Type type;
 
     public BlockMeasurement(int meta, Block.Properties properties) {
         super(properties);
-        setDefaultState(stateContainer.getBaseState().with(VARIANT, Type.DELETING));
         this.type = Type.values()[meta];
     }
-
-    @Override
-    protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
-        builder.add(VARIANT);
-     }
 
     @Override
     public void onReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
@@ -39,14 +31,14 @@ public class BlockMeasurement extends Block{
 
     private void breakBlockChain(World world, BlockPos comparisonPos) {
         if (world.getBlockState(comparisonPos).getBlock() instanceof BlockMeasurement) {
-            world.setBlockState(comparisonPos, stateContainer.getBaseState().with(VARIANT, Type.DELETING));
+            world.setBlockState(comparisonPos, ModBlocks.blockMeasurement10.getDefaultState());
             world.getPendingBlockTicks().scheduleTick(comparisonPos, ModBlocks.blockMeasurement10, 0);
         }
     }
 
     @Override
     public void tick(BlockState state, World worldIn, BlockPos pos, Random random) {
-        if(state.get(VARIANT) == Type.DELETING){
+        if(state.getBlock() == ModBlocks.blockMeasurement10){
             breakBlockChain(worldIn, pos.up());
             breakBlockChain(worldIn, pos.down());
             breakBlockChain(worldIn, pos.east());
@@ -57,11 +49,38 @@ public class BlockMeasurement extends Block{
         }
     }
 
+    @Override
+    public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, BlockPos pos) {
+        return true;
+    }
+
+    @Override
+    public boolean causesSuffocation(BlockState state, IBlockReader worldIn, BlockPos pos) {
+        return false;
+    }
+
+    @Override
+    public boolean isNormalCube(BlockState state, IBlockReader worldIn, BlockPos pos) {
+        return false;
+    }
+
+    @Override
+    public boolean canEntitySpawn(BlockState state, IBlockReader worldIn, BlockPos pos, EntityType<?> type) {
+        return false;
+    }
+
     public static int getTypeLength() {
         return Type.METADATA_LOOKUP.length;
     }
 
-    enum Type implements IStringSerializable {
+    public static Type getType(int i){
+        if(i>=0 && i<getTypeLength()){
+            return Type.METADATA_LOOKUP[i];
+        }
+        return Type.NUM_0;
+    }
+
+    enum Type{
         NUM_0(0, "num_0"),
         NUM_1(1, "num_1"),
         NUM_2(2, "num_2"),
@@ -74,7 +93,7 @@ public class BlockMeasurement extends Block{
         NUM_9(9, "num_9"),
         DELETING(10, "deleting");
 
-        private static final BlockMeasurement.Type[] METADATA_LOOKUP = new BlockMeasurement.Type[values().length];
+        private static final BlockMeasurement.Type[] METADATA_LOOKUP = values();
 
         private final int metadata;
         private final String name;
@@ -82,23 +101,6 @@ public class BlockMeasurement extends Block{
         Type(int metadataIn, String nameIn){
             this.metadata = metadataIn;
             this.name = nameIn;
-        }
-
-        public int getMetadata() {
-            return metadata;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        public static Type byMetadata(int metadata)
-        {
-            if (metadata < 0 || metadata >= METADATA_LOOKUP.length){
-                metadata = 0;
-            }
-            return METADATA_LOOKUP[metadata];
         }
     }
 }
