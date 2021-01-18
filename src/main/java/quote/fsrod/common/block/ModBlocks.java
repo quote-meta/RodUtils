@@ -3,6 +3,7 @@ package quote.fsrod.common.block;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -36,7 +37,6 @@ public class ModBlocks {
     @SubscribeEvent
     public static void registerBlocks(RegistryEvent.Register<Block> event){
         blockRegistry = event.getRegistry();
-        
         Block.Properties builder = Block.Properties.create(Material.ROCK).doesNotBlockMovement().hardnessAndResistance(0).sound(SoundType.STONE);
         for (int i = 0; i <= 10; i++) {
             register(new BlockMeasurement(i, builder), LibBlockName.MEASURING_BLOCK + "i");

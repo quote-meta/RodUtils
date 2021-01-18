@@ -51,7 +51,7 @@ public class BasicStrucure implements IStructure {
         states.add(Blocks.AIR.getDefaultState());
         List<Integer> stateNumsList = new ArrayList<>();
 
-        for (BlockPos src : BlockPos.getAllInBox(pos1, pos2)) {
+        BlockPos.getAllInBox(pos1, pos2).forEach( src -> {
             if (world.isAirBlock(src)) {
                 stateNumsList.add(0);
             } else {
@@ -65,7 +65,7 @@ public class BasicStrucure implements IStructure {
 
                 stateNumsList.add(stateNum);
             }
-        }
+        });
 
         stateNums = stateNumsList.stream().mapToInt(Integer::intValue).toArray();
     }

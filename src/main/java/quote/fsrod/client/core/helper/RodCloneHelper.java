@@ -10,7 +10,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
@@ -22,16 +21,15 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceContext;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.RayTraceContext.BlockMode;
 import net.minecraft.util.math.RayTraceContext.FluidMode;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.RayTraceResult.Type;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.InputEvent.MouseInputEvent;
 import net.minecraftforge.client.event.InputEvent.MouseScrollEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import quote.fsrod.common.RodUtils;
@@ -40,7 +38,6 @@ import quote.fsrod.common.core.network.ModPacketHandler;
 import quote.fsrod.common.core.network.item.CPacketItemUpdateNBT;
 import quote.fsrod.common.core.network.item.CPacketRodCloneStartBuilding;
 import quote.fsrod.common.core.utils.ChatUtils;
-import quote.fsrod.common.core.utils.ModUtils;
 import quote.fsrod.common.item.rod.ItemRodClone;
 import quote.fsrod.common.item.utils.IItemHasUUID;
 
@@ -94,8 +91,9 @@ public class RodCloneHelper {
             int sizeX = Math.abs((blockPos.getX() - blockPosNear.getX()));
             int sizeY = Math.abs((blockPos.getY() - blockPosNear.getY()));
             int sizeZ = Math.abs((blockPos.getZ() - blockPosNear.getZ()));
-            if(sizeX > ConfigHandler.rodCloneMaxLength || sizeY > ConfigHandler.rodCloneMaxLength || sizeZ > ConfigHandler.rodCloneMaxLength){
-                ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodClone.warning.rangeTooLarge", ConfigHandler.rodCloneMaxLength);
+            int maxLength = ConfigHandler.COMMON.rodCloneMaxLength.get();
+            if(sizeX > maxLength || sizeY > maxLength || sizeZ > maxLength){
+                ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodClone.warning.rangeTooLarge", maxLength);
                 return;
             }
             tag.put(ItemRodClone.NBT_POINT_END, NBTUtil.writeBlockPos(blockPos));
@@ -188,7 +186,7 @@ public class RodCloneHelper {
             return;
         }
 
-        for(BlockPos src: BlockPos.getAllInBox(posNear, posEnd)){
+        BlockPos.getAllInBox(posNear, posEnd).forEach(src -> {
             BlockPos srcRelative = src.subtract(posNear);
             BlockPos posRotated = srcRelative.rotate(rotation);
             BlockPos dst = posDst.add(posRotated);
@@ -196,23 +194,22 @@ public class RodCloneHelper {
             if(world.isAirBlock(dst) && !world.isAirBlock(src)){
                 BlockState blockState = world.getBlockState(src).rotate(rotation);
                 Block block = blockState.getBlock();
-                Item item = Item.getItemFromBlock(block);
-                int damage = block.damageDropped(blockState);
+                ItemStack stackSrc = new ItemStack(block);
                 
                 if(player.isCreative()){
                     world.setBlockState(dst, blockState);
-                    continue;
+                    return;
                 }
                 for(int i = 0; i < size; i++){
                     ItemStack stack = inventory.getStackInSlot(i);
-                    if(stack.getItem() == item && stack.getDamage() == damage){
+                    if(stack.equals(stackSrc, false)){
                         stack.shrink(1);
                         world.setBlockState(dst, blockState);
                         break;
                     }
                 }
             }
-        }
+        });
     }
 
     public static void handleTransfering(PlayerEntity player, BlockPos posNear, BlockPos posEnd, BlockPos posDst, Rotation rotation){
@@ -225,15 +222,18 @@ public class RodCloneHelper {
             return;
         }
 
-        Rotation rotation2 = rotation;
+        final Rotation rotation2;
         if(rotation == Rotation.CLOCKWISE_90){
             rotation2 = Rotation.COUNTERCLOCKWISE_90;
         }
         else if(rotation == Rotation.COUNTERCLOCKWISE_90){
             rotation2 = Rotation.CLOCKWISE_90;
         }
+        else{
+            rotation2 = rotation;
+        }
 
-        for(BlockPos src: BlockPos.getAllInBox(posNear, posEnd)){
+        BlockPos.getAllInBox(posNear, posEnd).forEach(src -> {
             BlockPos srcRelative = src.subtract(posNear);
             BlockPos posRotated = srcRelative.rotate(rotation);
             BlockPos dst = posDst.add(posRotated);
@@ -269,7 +269,7 @@ public class RodCloneHelper {
                     tileEntity2Sub.setWorld(world);
                 }
             }
-        }
+        });
     }
 
     @Nullable

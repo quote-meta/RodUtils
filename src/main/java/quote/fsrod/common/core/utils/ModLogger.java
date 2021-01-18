@@ -30,13 +30,13 @@ public class ModLogger {
     }
 
     public static void debug(String format, Object... data) {
-        if(ConfigHandler.isDebugging) {
+        if(ConfigHandler.COMMON.isDebugging.get()) {
             RodUtils.logger.info(getModPrefix(), format, data);
         }
     }
 
     public static void debug(String format) {
-        if(ConfigHandler.isDebugging) {
+        if(ConfigHandler.COMMON.isDebugging.get()) {
             RodUtils.logger.info(getModPrefix(), format);
         }
     }

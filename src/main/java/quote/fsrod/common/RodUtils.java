@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import quote.fsrod.client.core.proxy.ClientProxy;
-import quote.fsrod.common.core.network.ModPacketHandler;
 import quote.fsrod.common.core.proxy.CommonProxy;
 import quote.fsrod.common.core.proxy.IProxy;
 import quote.fsrod.common.lib.LibMisc;

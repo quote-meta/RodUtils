@@ -16,13 +16,12 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.IntNBT;
 import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
@@ -32,11 +31,11 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceContext;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.RayTraceContext.BlockMode;
 import net.minecraft.util.math.RayTraceContext.FluidMode;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.RayTraceResult.Type;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
@@ -153,8 +152,9 @@ public class RodReincarnationHelper {
                 int sizeX = Math.abs((blockPos.getX() - blockPosNear.getX()));
                 int sizeY = Math.abs((blockPos.getY() - blockPosNear.getY()));
                 int sizeZ = Math.abs((blockPos.getZ() - blockPosNear.getZ()));
-                if(sizeX > ConfigHandler.rodReincarnationMaxLength || sizeY > ConfigHandler.rodReincarnationMaxLength || sizeZ > ConfigHandler.rodReincarnationMaxLength){
-                    ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodReincarnation.warning.rangeTooLarge", ConfigHandler.rodReincarnationMaxLength);
+                int maxLength = ConfigHandler.COMMON.rodReincarnationMaxLength.get();
+                if(sizeX > maxLength || sizeY > maxLength || sizeZ > maxLength){
+                    ChatUtils.sendTranslatedChat(player, TextFormatting.RED, "fs.message.rodReincarnation.warning.rangeTooLarge", maxLength);
                     return;
                 }
                 tag.put(ItemRodReincarnation.NBT_POINT_END, NBTUtil.writeBlockPos(blockPos));
@@ -179,7 +179,8 @@ public class RodReincarnationHelper {
     }
 
     private static boolean existsFile(ItemStack stack){
-        File savesDir = FMLClientHandler.instance().getSavesDir();
+        // get saves directory : "%GAME_DIR%/saves"
+        File savesDir = Minecraft.getInstance().getSaveLoader().func_215781_c().toFile();
         String filePath = getFileName(stack);
         File file = new File(savesDir, PATH_REINCARNATION_HOME + filePath);
 
@@ -270,8 +271,7 @@ public class RodReincarnationHelper {
                     if(state != null){
                         BlockState stateRotated = state.rotate(rotation);
                         Block block = stateRotated.getBlock();
-                        Item item = Item.getItemFromBlock(block);
-                        int damage = block.damageDropped(stateRotated);
+                        ItemStack stackSrc = new ItemStack(block);
 
                         if(player.isCreative()){
                             world.setBlockState(dst, stateRotated);
@@ -280,7 +280,7 @@ public class RodReincarnationHelper {
                         }
                         for(int j = 0; j < size; j++){
                             ItemStack stack = inventory.getStackInSlot(j);
-                            if(stack.getItem() == item && stack.getDamage() == damage){
+                            if(stack.equals(stackSrc, false)){
                                 stack.shrink(1);
                                 world.setBlockState(dst, stateRotated);
                                 break;
@@ -323,7 +323,8 @@ public class RodReincarnationHelper {
 
     @Nonnull
     public static CompoundNBT loadNBT(ItemStack stack){
-        File savesDir = FMLClientHandler.instance().getSavesDir();
+        // get saves directory : "%GAME_DIR%/saves"
+        File savesDir = Minecraft.getInstance().getSaveLoader().func_215781_c().toFile();
         String filePath = getFileName(stack);
         File file = new File(savesDir, PATH_REINCARNATION_HOME + filePath);
 
@@ -339,7 +340,8 @@ public class RodReincarnationHelper {
     }
 
     public static boolean saveNBT(CompoundNBT tag, ItemStack stack){
-        File savesDir = FMLClientHandler.instance().getSavesDir();
+        // get saves directory : "%GAME_DIR%/saves"
+        File savesDir = Minecraft.getInstance().getSaveLoader().func_215781_c().toFile();
         String filePath = getFileName(stack);
         File file = new File(savesDir, PATH_REINCARNATION_HOME + filePath);
 
