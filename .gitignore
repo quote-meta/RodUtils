@@ -5,6 +5,7 @@ bin
 .metadata
 .classpath
 .project
+eclipse-formatter.xml
 
 # idea
 out
@@ -46,3 +47,9 @@ src/api
 
 #lib
 libs
+
+#aftereffects files
+media/aftereffects
+
+#generated
+.cache

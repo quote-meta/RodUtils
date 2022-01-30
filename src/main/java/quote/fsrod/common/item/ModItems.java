@@ -1,20 +1,23 @@
 package quote.fsrod.common.item;
 
-import net.minecraft.item.Item;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.registries.IForgeRegistry;
-import quote.fsrod.common.item.rod.ItemRodClone;
-import quote.fsrod.common.item.rod.ItemRodMeasurement;
-import quote.fsrod.common.item.rod.ItemRodReincarnation;
+import quote.fsrod.common.lib.LibItemName;
 import quote.fsrod.common.lib.LibMisc;
 
-@Mod.EventBusSubscriber(modid = LibMisc.MOD_ID)
-public final class ModItems {
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+public class ModItems {
+
     public static Item rodClone;
+    public static Item rodTransfer;
     public static Item rodReincarnation;
     public static Item rodMeasurement;
+
+    public static Item charmUranus;
 
     private static IForgeRegistry<Item> registry;
 
@@ -22,16 +25,30 @@ public final class ModItems {
     public static void registerItems(RegistryEvent.Register<Item> event){
         registry = event.getRegistry();
 
-        rodClone = new ItemRodClone();
-        rodReincarnation = new ItemRodReincarnation();
-        rodMeasurement = new ItemRodMeasurement();
+        rodClone = new Item(unstackable());
+        rodTransfer = new Item(unstackable());
+        rodReincarnation = new Item(unstackable());
+        rodMeasurement = new Item(unstackable());
+        
+        charmUranus = new Item(unstackable());
 
-        register(rodClone);
-        register(rodReincarnation);
-        register(rodMeasurement);
+        register(LibItemName.ROD_CLONE, rodClone);
+        register(LibItemName.ROD_TRANSFER, rodTransfer);
+        register(LibItemName.ROD_MEASUREMENT, rodMeasurement);
+        register(LibItemName.ROD_REINCARNATION, rodReincarnation);
+
+        register(LibItemName.CHARM_URANUS, charmUranus);
     }
 
-    private static void register(Item item){
-        registry.register(item);
+    public static Item.Properties defaultProperty() {
+		return new Item.Properties().tab(CreativeModeTab.TAB_TOOLS);
+	}
+
+	private static Item.Properties unstackable() {
+		return defaultProperty().stacksTo(1);
+	}
+
+    private static void register(String name, Item item){
+        registry.register(item.setRegistryName(LibMisc.MOD_ID, name));
     }
 }
