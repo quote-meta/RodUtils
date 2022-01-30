@@ -2,10 +2,12 @@ package quote.fsrod.common.item;
 
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.IForgeRegistry;
+import quote.fsrod.common.item.utils.ModRarities;
 import quote.fsrod.common.lib.LibItemName;
 import quote.fsrod.common.lib.LibMisc;
 
@@ -25,12 +27,12 @@ public class ModItems {
     public static void registerItems(RegistryEvent.Register<Item> event){
         registry = event.getRegistry();
 
-        rodClone = new Item(unstackable());
-        rodTransfer = new Item(unstackable());
-        rodReincarnation = new Item(unstackable());
-        rodMeasurement = new Item(unstackable());
+        rodClone = new Item(unstackable().rarity(Rarity.EPIC));
+        rodTransfer = new Item(unstackable().rarity(Rarity.EPIC));
+        rodReincarnation = new Item(unstackable().rarity(ModRarities.LEGENDARY));
+        rodMeasurement = new Item(unstackable().rarity(Rarity.EPIC));
         
-        charmUranus = new Item(unstackable());
+        charmUranus = new Item(unstackable().rarity(ModRarities.LEGENDARY));
 
         register(LibItemName.ROD_CLONE, rodClone);
         register(LibItemName.ROD_TRANSFER, rodTransfer);
