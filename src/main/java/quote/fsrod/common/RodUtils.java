@@ -11,6 +11,7 @@ import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import quote.fsrod.common.core.handler.PlayerHandler;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,7 +33,7 @@ public class RodUtils {
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-
+        MinecraftForge.EVENT_BUS.register(new PlayerHandler());
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {

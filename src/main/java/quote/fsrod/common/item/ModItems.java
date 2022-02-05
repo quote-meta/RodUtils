@@ -32,7 +32,7 @@ public class ModItems {
         rodReincarnation = new Item(unstackable().rarity(ModRarities.LEGENDARY));
         rodMeasurement = new Item(unstackable().rarity(Rarity.EPIC));
         
-        charmUranus = new Item(unstackable().rarity(ModRarities.LEGENDARY));
+        charmUranus = new CharmUranusItem(unstackable().rarity(ModRarities.LEGENDARY));
 
         register(LibItemName.ROD_CLONE, rodClone);
         register(LibItemName.ROD_TRANSFER, rodTransfer);
