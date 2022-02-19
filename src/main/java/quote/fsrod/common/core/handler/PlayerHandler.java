@@ -9,16 +9,33 @@ import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
+import quote.fsrod.common.core.helper.rod.RodCloneHelper;
 import quote.fsrod.common.item.rod.RodCloneItem;
-import quote.fsrod.common.lib.LibMisc;
+import quote.fsrod.common.item.rod.RodTransferItem;
 import quote.fsrod.common.property.player.IPlayerProperty;
 import quote.fsrod.common.property.player.PlayerProperty;
 
-@Mod.EventBusSubscriber(modid = LibMisc.MOD_ID, bus = Bus.FORGE)
 public class PlayerHandler {
     
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public void onChatMessage(ServerChatEvent event){
+
+    }
+
+    @SubscribeEvent
+    public void onRightClickItem(RightClickItem event){
+        Player player = event.getPlayer();
+        ItemStack stackMainHand = event.getItemStack();
+
+        if(player.level.isClientSide && (RodCloneItem.isItemOf(stackMainHand))){
+            RodCloneHelper.onRightClickItem(stackMainHand, player);
+        }
+        if(player.level.isClientSide && (RodTransferItem.isItemOf(stackMainHand))){
+            RodCloneHelper.onRightClickItem(stackMainHand, player);
+        }
+    }
+
     @SubscribeEvent
     public void onPlayerUpdate(LivingUpdateEvent event){
         if(!(event.getEntity() instanceof Player)) return;

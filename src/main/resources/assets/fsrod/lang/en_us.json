@@ -25,6 +25,9 @@
     "message.fsrod.rod_clone.use.reset":"Reset the source range",
     "message.fsrod.rod_clone.warning.rangesInterfere":"The Two ranges interfere",
     "message.fsrod.rod_clone.warning.rangeTooLarge":"The range is too large (upper size: %1$d)",
+    "message.fsrod.rod_transfer.use.reset":"Reset the source range",
+    "message.fsrod.rod_transfer.warning.rangesInterfere":"The Two ranges interfere",
+    "message.fsrod.rod_transfer.warning.rangeTooLarge":"The range is too large (upper size: %1$d)",
 
     "message.fsrod.rod_reincarnation.use.reset":"Reset the source range",
     "message.fsrod.rod_reincarnation.use.save.success":"I've bound this space to my soul...",

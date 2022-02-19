@@ -7,6 +7,8 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.IForgeRegistry;
+import quote.fsrod.common.item.rod.RodCloneItem;
+import quote.fsrod.common.item.rod.RodTransferItem;
 import quote.fsrod.common.item.utils.ModRarities;
 import quote.fsrod.common.lib.LibItemName;
 import quote.fsrod.common.lib.LibMisc;
@@ -27,8 +29,8 @@ public class ModItems {
     public static void registerItems(RegistryEvent.Register<Item> event){
         registry = event.getRegistry();
 
-        rodClone = new Item(unstackable().rarity(Rarity.EPIC));
-        rodTransfer = new Item(unstackable().rarity(Rarity.EPIC));
+        rodClone = new RodCloneItem(unstackable().rarity(Rarity.EPIC));
+        rodTransfer = new RodTransferItem(unstackable().rarity(Rarity.EPIC));
         rodReincarnation = new Item(unstackable().rarity(ModRarities.LEGENDARY));
         rodMeasurement = new Item(unstackable().rarity(Rarity.EPIC));
         
