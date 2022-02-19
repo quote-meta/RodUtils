@@ -8,6 +8,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.IForgeRegistry;
 import quote.fsrod.common.item.rod.RodCloneItem;
+import quote.fsrod.common.item.rod.RodMeasurementItem;
 import quote.fsrod.common.item.rod.RodTransferItem;
 import quote.fsrod.common.item.utils.ModRarities;
 import quote.fsrod.common.lib.LibItemName;
@@ -32,7 +33,7 @@ public class ModItems {
         rodClone = new RodCloneItem(unstackable().rarity(Rarity.EPIC));
         rodTransfer = new RodTransferItem(unstackable().rarity(Rarity.EPIC));
         rodReincarnation = new Item(unstackable().rarity(ModRarities.LEGENDARY));
-        rodMeasurement = new Item(unstackable().rarity(Rarity.EPIC));
+        rodMeasurement = new RodMeasurementItem(unstackable().rarity(Rarity.EPIC));
         
         charmUranus = new CharmUranusItem(unstackable().rarity(ModRarities.LEGENDARY));
 

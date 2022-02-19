@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "fsrod:block/measuring_block_deleting"
+  }
+}

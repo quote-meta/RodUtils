@@ -13,6 +13,7 @@ public class DataGenerators {
 
         }
         if(event.includeClient()) {
+            event.getGenerator().addProvider(new BlockStateGenerator(event.getGenerator(), event.getExistingFileHelper()));
             event.getGenerator().addProvider(new ItemModelGenerator(event.getGenerator(), event.getExistingFileHelper()));
         }
     }
