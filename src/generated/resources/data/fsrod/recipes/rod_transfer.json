@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " ED",
+    "PGE",
+    "GP "
+  ],
+  "key": {
+    "P": {
+      "tag": "forge:ender_pearls"
+    },
+    "D": {
+      "tag": "forge:gems/diamond"
+    },
+    "G": {
+      "tag": "forge:ingots/gold"
+    },
+    "E": {
+      "tag": "forge:gems/emerald"
+    }
+  },
+  "result": {
+    "item": "fsrod:rod_transfer"
+  }
+}

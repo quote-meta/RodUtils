@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " DS",
+    "PGD",
+    "GP "
+  ],
+  "key": {
+    "P": {
+      "tag": "forge:ender_pearls"
+    },
+    "D": {
+      "tag": "forge:gems/diamond"
+    },
+    "G": {
+      "tag": "forge:ingots/gold"
+    },
+    "S": {
+      "tag": "forge:nether_stars"
+    }
+  },
+  "result": {
+    "item": "fsrod:rod_recollection"
+  }
+}

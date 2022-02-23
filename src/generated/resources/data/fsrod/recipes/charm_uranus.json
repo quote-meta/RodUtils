@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "NDN",
+    "FBF",
+    " D "
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:beacon"
+    },
+    "N": {
+      "item": "minecraft:netherite_block"
+    },
+    "D": {
+      "item": "minecraft:diamond_block"
+    },
+    "F": {
+      "tag": "forge:feathers"
+    }
+  },
+  "result": {
+    "item": "fsrod:charm_uranus"
+  }
+}

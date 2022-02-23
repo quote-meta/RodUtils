@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " DE",
+    "PCD",
+    "TP "
+  ],
+  "key": {
+    "P": {
+      "tag": "forge:ender_pearls"
+    },
+    "D": {
+      "tag": "forge:gems/diamond"
+    },
+    "T": {
+      "item": "fsrod:rod_transfer"
+    },
+    "C": {
+      "item": "fsrod:rod_clone"
+    },
+    "E": {
+      "tag": "forge:gems/emerald"
+    }
+  },
+  "result": {
+    "item": "fsrod:rod_measurement"
+  }
+}
