@@ -28,10 +28,11 @@ public class RodCloneHelper {
     public static void onMouseScrollEvent(MouseScrollEvent event, ItemStack stack, Player player){
         if (event.getScrollDelta() != 0 && player.isShiftKeyDown()){
             if(!IItemHasUUID.hasUUID(stack)) return;
-            CompoundTag tag = stack.getOrCreateTag();
+            CompoundTag tag = new CompoundTag();
+            CompoundTag tagStack = stack.getOrCreateTag();
             UUID uuid = IItemHasUUID.getOrCreateUUID(stack);
 
-            int oldReach = tag.getInt(IItemHasSpaceInfoTag.TAG_REACH_DISTANCE);
+            int oldReach = tagStack.getInt(IItemHasSpaceInfoTag.TAG_REACH_DISTANCE);
             int newReach = (int)Mth.clamp(oldReach + event.getScrollDelta(), 2, 10);
             tag.putInt(IItemHasSpaceInfoTag.TAG_REACH_DISTANCE, newReach);
 

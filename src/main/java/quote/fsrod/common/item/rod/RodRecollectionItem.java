@@ -56,17 +56,18 @@ public class RodRecollectionItem extends Item implements IItemHasSpaceInfoTag, I
     }
 
     @Override
-    public void notified(Player player, ItemStack stack, CompoundTag tag) {
+    public void notified(Player player, ItemStack stack, CompoundTag tagPacket) {
         Level level = player.level;
         Inventory inventory = player.getInventory();
         int size = inventory.getContainerSize();
 
+        CompoundTag tag = stack.getOrCreateTag();
         Optional<BlockPos> possbleBlockPosScheduled = IItemHasSpaceInfoTag.getBlockPosScheduled(stack);
         Optional<Direction> possbleDirection = IItemHasSpaceInfoTag.getFacingScheduled(stack);
 
         if(!tag.contains(TAG_STRUCTURE_DATA) || !possbleBlockPosScheduled.isPresent() || !possbleDirection.isPresent()){
             String path = stack.getItem().getRegistryName().getPath();
-            ChatUtils.sendTranslatedChat(player, ChatFormatting.GREEN, "message.fsrod." + path + ".build.failed");
+            ChatUtils.sendTranslatedChat(player, ChatFormatting.GREEN, "message.fsrod." + path + ".use.build.failed");
             return;
         }
 
@@ -124,7 +125,7 @@ public class RodRecollectionItem extends Item implements IItemHasSpaceInfoTag, I
 
     @Override
     public CompoundTag getNotifyTag(Player player, ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTag().copy();
+        CompoundTag tag = new CompoundTag();
         return tag;
     }
 
