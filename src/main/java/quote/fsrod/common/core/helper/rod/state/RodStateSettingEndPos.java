@@ -12,7 +12,7 @@ import quote.fsrod.common.core.handler.ConfigHandler;
 import quote.fsrod.common.core.utils.ChatUtils;
 import quote.fsrod.common.item.utils.IItemHasSpaceInfoTag;
 
-public class RodStateSettingEndPos extends RodState{
+public class RodStateSettingEndPos implements IRodState{
 
     @Override
     public void onRightClickWithPressShift(ItemStack stack, Player player) {

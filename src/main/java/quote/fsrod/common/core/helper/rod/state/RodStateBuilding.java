@@ -12,7 +12,7 @@ import quote.fsrod.common.core.network.ModPacketHandler;
 import quote.fsrod.common.core.network.item.CPacketItemNotify;
 import quote.fsrod.common.item.utils.IItemHasSpaceInfoTag;
 
-public class RodStateBuilding extends RodState{
+public class RodStateBuilding implements IRodState{
 
     @Override
     public void onRightClickWithPressShift(ItemStack stack, Player player) {

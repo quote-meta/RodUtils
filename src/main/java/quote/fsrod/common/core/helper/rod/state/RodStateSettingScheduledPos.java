@@ -9,7 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import quote.fsrod.common.core.utils.ChatUtils;
 import quote.fsrod.common.item.utils.IItemHasSpaceInfoTag;
 
-public class RodStateSettingScheduledPos extends RodState{
+public class RodStateSettingScheduledPos implements IRodState{
 
     @Override
     public void onRightClickWithPressShift(ItemStack stack, Player player) {

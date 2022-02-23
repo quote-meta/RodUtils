@@ -7,7 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import quote.fsrod.common.core.utils.ChatUtils;
 import quote.fsrod.common.item.utils.IItemHasSpaceInfoTag;
 
-public class RodStateStandbyInput extends RodState{
+public class RodStateStandbyInput implements IRodState{
 
     @Override
     public void onRightClickTargetBlock(BlockPos blockPos, ItemStack stack, Player player) {

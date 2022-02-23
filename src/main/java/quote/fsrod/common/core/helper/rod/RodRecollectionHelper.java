@@ -8,16 +8,17 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.AABB;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.InputEvent.MouseScrollEvent;
-import quote.fsrod.common.core.helper.rod.state.RodState;
+import quote.fsrod.client.core.utils.RenderUtils;
+import quote.fsrod.common.core.helper.rod.state.IRodState;
 import quote.fsrod.common.core.helper.rod.state.RodStateLoadSpace;
 import quote.fsrod.common.core.helper.rod.state.RodStateRecollection;
 import quote.fsrod.common.core.helper.rod.state.RodStateSaveSpace;
@@ -56,12 +57,12 @@ public class RodRecollectionHelper {
     public static void onRightClickItem(ItemStack stack, Player player){
         resetTagIfOtherDimension(stack, player);
 
-        RodState state = getCurrentRodState(stack);
+        IRodState state = getCurrentRodState(stack);
         if(player.isShiftKeyDown()){
             state.onRightClickWithPressShift(stack, player);
         }
         else{
-            state.onRightClickTargetBlock(getBlockPosSeeing(stack, player, Minecraft.getInstance().getDeltaFrameTime()), stack, player);
+            state.onRightClickTargetBlock(SpaceReader.getBlockPosSeeing(stack, player, Minecraft.getInstance().getDeltaFrameTime()), stack, player);
         }
     }
 
@@ -82,7 +83,7 @@ public class RodRecollectionHelper {
         }
     }
 
-    public static RodState getCurrentRodState(ItemStack stack){
+    public static IRodState getCurrentRodState(ItemStack stack){
         CompoundTag tag = stack.getOrCreateTag();
         
         if(tag.getString(IItemHasFileData.TAG_FILE_NAME).isEmpty()) return new RodStateStandbyInput();
@@ -133,33 +134,46 @@ public class RodRecollectionHelper {
             tagData.getInt(BasicStructure.TAG_DATA_SIZE_Z) - 1);
     }
 
-
-    @SuppressWarnings("resource")
-    public static BlockPos getBlockPosSeeing(ItemStack stack, Player player, float partialTicks){
-        CompoundTag tag = stack.getOrCreateTag();
-
-        int distance = tag.getInt(IItemHasSpaceInfoTag.TAG_REACH_DISTANCE);
-        BlockPos blockPos = null;
-        HitResult objectMouseOver = Minecraft.getInstance().hitResult;
-
-        boolean isLookingAir = true;
-        if (objectMouseOver instanceof BlockHitResult && ((BlockHitResult)objectMouseOver).getBlockPos() != null){
-            blockPos = ((BlockHitResult)objectMouseOver).getBlockPos();
-            isLookingAir = player.level.getBlockState(blockPos).isAir();
-        }
-        if (isLookingAir){
-            Vec3 eyePos = player.getEyePosition(partialTicks);
-            Vec3 viewVec = player.getViewVector(partialTicks).scale(distance);
-            Vec3 viewPos = eyePos.add(viewVec);
-            objectMouseOver = player.level.clip(new ClipContext(eyePos, viewPos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, null));
-            if(objectMouseOver instanceof BlockHitResult && ((BlockHitResult)objectMouseOver).getBlockPos() != null){
-                blockPos = ((BlockHitResult)objectMouseOver).getBlockPos();
+    @OnlyIn(Dist.CLIENT)
+    public static void drawFakeBlocks(Player player, ItemStack stackMainHand, float partialTicks){
+        if(!IItemHasFileData.getFileName(stackMainHand).isEmpty()){
+            BlockPos blockPosSeeing = SpaceReader.getBlockPosSeeing(stackMainHand, player, partialTicks);
+            CompoundTag tag = stackMainHand.getOrCreateTag();
+            if(!tag.getCompound(IItemHasStructureData.TAG_STRUCTURE_DATA).isEmpty() && tag.getCompound(IItemHasSplitTagList.TAG_SPLIT).isEmpty()){
+                // load mode
+                Optional<BlockPos> possibleBlockPosScheduled = IItemHasSpaceInfoTag.getBlockPosScheduled(stackMainHand);
+                possibleBlockPosScheduled.ifPresent(blockPosScheduled -> {
+                    BlockPos blockDiff = RodRecollectionHelper.getBlockPosData(stackMainHand);
+                    if(blockDiff != null){
+                        Direction direction = IItemHasSpaceInfoTag.getFacingScheduled(stackMainHand).orElse(Direction.NORTH);
+                        AABB aabbDst = SpaceReader.getScheduledAABB(blockPosScheduled, blockDiff, direction);
+                        RenderUtils.renderFakeFrameFX(aabbDst);
+                        RenderUtils.renderFakeBlockFX(blockPosScheduled);
+                    }
+                });
             }
             else{
-                blockPos = new BlockPos(viewPos);
-            }
-        }
+                Optional<String> possibleDimension = IItemHasSpaceInfoTag.getDimension(stackMainHand);
+                Optional<BlockPos> possibleBlockPosNear = IItemHasSpaceInfoTag.getBlockPosNear(stackMainHand);
+                Optional<BlockPos> possibleBlockPosEnd = IItemHasSpaceInfoTag.getBlockPosEnd(stackMainHand);
+    
+                possibleDimension.ifPresent(dimension -> {
+                    if(!player.level.dimension().location().toString().equals(dimension)) return;
+                    possibleBlockPosNear.ifPresent(blockPosNear -> {
+                        possibleBlockPosEnd.ifPresentOrElse(blockPosEnd -> {
+                            AABB aabbSrc = new AABB(blockPosNear, blockPosEnd).expandTowards(1, 1, 1);
+                            RenderUtils.renderFakeFrameFX(aabbSrc);
+                            RenderUtils.renderFakeBlockFX(blockPosNear);
+                        }, () -> {
+                            AABB aabbSrc = new AABB(blockPosNear, blockPosSeeing).expandTowards(1, 1, 1);
+                            RenderUtils.renderFakeFrameFX(aabbSrc);
+                            RenderUtils.renderFakeBlockFX(blockPosNear);
+                        });
+                    });
+                });
 
-        return blockPos;
+            }
+            RenderUtils.renderFakeBlockFX(blockPosSeeing);
+        }
     }
 }

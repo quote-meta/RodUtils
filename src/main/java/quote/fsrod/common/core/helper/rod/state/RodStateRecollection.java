@@ -12,7 +12,7 @@ import quote.fsrod.common.core.network.ModPacketHandler;
 import quote.fsrod.common.core.network.item.CPacketItemNotify;
 import quote.fsrod.common.item.utils.IItemHasSpaceInfoTag;
 
-public class RodStateRecollection extends RodState{
+public class RodStateRecollection implements IRodState{
     @Override
     public void onRightClickWithPressShift(ItemStack stack, Player player) {
         IItemHasSpaceInfoTag.sendRemoveNBTTagToServer(stack, IItemHasSpaceInfoTag.TAG_POINT_SCHEDULED);

@@ -2,13 +2,50 @@ package quote.fsrod.common.core.helper.rod;
 
 import javax.annotation.Nonnull;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+import quote.fsrod.common.item.utils.IItemHasSpaceInfoTag;
 
 public class SpaceReader {
+
+    @SuppressWarnings("resource")
+    public static BlockPos getBlockPosSeeing(ItemStack stack, Player player, float partialTicks){
+        CompoundTag tag = stack.getOrCreateTag();
+
+        int distance = tag.getInt(IItemHasSpaceInfoTag.TAG_REACH_DISTANCE);
+        BlockPos blockPos = null;
+        HitResult objectMouseOver = Minecraft.getInstance().hitResult;
+
+        boolean isLookingAir = true;
+        if (objectMouseOver instanceof BlockHitResult && ((BlockHitResult)objectMouseOver).getBlockPos() != null){
+            blockPos = ((BlockHitResult)objectMouseOver).getBlockPos();
+            isLookingAir = player.level.getBlockState(blockPos).isAir();
+        }
+        if (isLookingAir){
+            Vec3 eyePos = player.getEyePosition(partialTicks);
+            Vec3 viewVec = player.getViewVector(partialTicks).scale(distance);
+            Vec3 viewPos = eyePos.add(viewVec);
+            objectMouseOver = player.level.clip(new ClipContext(eyePos, viewPos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, null));
+            if(objectMouseOver instanceof BlockHitResult && ((BlockHitResult)objectMouseOver).getBlockPos() != null){
+                blockPos = ((BlockHitResult)objectMouseOver).getBlockPos();
+            }
+            else{
+                blockPos = new BlockPos(viewPos);
+            }
+        }
+
+        return blockPos;
+    }
 
     @Nonnull
     public static AABB getScheduledAABB(BlockPos posNear, BlockPos posEnd, Player player, BlockPos posSeeing){

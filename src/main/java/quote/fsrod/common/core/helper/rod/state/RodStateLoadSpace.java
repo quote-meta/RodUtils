@@ -10,7 +10,7 @@ import quote.fsrod.common.item.utils.IItemHasFileData;
 import quote.fsrod.common.item.utils.IItemHasSpaceInfoTag;
 import quote.fsrod.common.item.utils.IItemHasStructureData;
 
-public class RodStateLoadSpace extends RodState{
+public class RodStateLoadSpace implements IRodState{
 
     @Override
     public void onRightClickWithPressShift(ItemStack stack, Player player) {
