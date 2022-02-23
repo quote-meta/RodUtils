@@ -36,7 +36,7 @@ public class RodStateSettingEndPos extends RodState{
                 sizeZ > ConfigHandler.COMMON.rodCloneMaxLength.get()
             ){
                 String path = stack.getItem().getRegistryName().getPath();
-                ChatUtils.sendTranslatedChat(player, ChatFormatting.RED, "message.fsrod." + path + ".warning.rangeTooLarge");
+                ChatUtils.sendTranslatedChat(player, ChatFormatting.RED, "message.fsrod." + path + ".warning.range_too_large");
                 return;
             }
     

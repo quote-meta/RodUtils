@@ -10,7 +10,9 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import quote.fsrod.common.core.helper.rod.RodCloneHelper;
+import quote.fsrod.common.core.helper.rod.RodRecollectionHelper;
 import quote.fsrod.common.item.rod.RodCloneItem;
+import quote.fsrod.common.item.rod.RodRecollectionItem;
 import quote.fsrod.common.item.rod.RodTransferItem;
 import quote.fsrod.common.property.player.IPlayerProperty;
 import quote.fsrod.common.property.player.PlayerProperty;
@@ -20,7 +22,13 @@ public class PlayerHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void onChatMessage(ServerChatEvent event){
-
+        Player player = event.getPlayer();
+        if(!player.level.isClientSide){
+            if(RodRecollectionItem.isItemOf(player.getMainHandItem())){
+                RodRecollectionHelper.setFileName(player.getMainHandItem(), event.getMessage(), player);
+                event.setCanceled(true);
+            }
+        }
     }
 
     @SubscribeEvent
@@ -33,6 +41,9 @@ public class PlayerHandler {
         }
         if(player.level.isClientSide && (RodTransferItem.isItemOf(stackMainHand))){
             RodCloneHelper.onRightClickItem(stackMainHand, player);
+        }
+        if(player.level.isClientSide && (RodRecollectionItem.isItemOf(stackMainHand))){
+            RodRecollectionHelper.onRightClickItem(stackMainHand, player);
         }
     }
 

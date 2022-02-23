@@ -27,6 +27,16 @@ public class SpaceReader {
         return new AABB(posScheduled, posScheduled.offset(posRotated)).expandTowards(1, 1, 1);
     }
 
+    
+    @Nonnull
+    public static AABB getScheduledAABB(BlockPos posScheduled, BlockPos posDiff, Direction direction){
+        Direction directionSrc = Direction.EAST;
+        Rotation rot = getRotation(directionSrc, direction);
+        BlockPos posRotated = posDiff.rotate(rot);
+
+        return new AABB(posScheduled, posScheduled.offset(posRotated)).expandTowards(1, 1, 1);
+    }
+
     @Nonnull
     public static Direction getFacingAABB(BlockPos posNear, BlockPos posEnd){
         if(posEnd.getX() >= posNear.getX()){

@@ -9,9 +9,9 @@ public class ConfigHandler {
     public static class Common {
         public final ForgeConfigSpec.BooleanValue isDebugging;
         public final ForgeConfigSpec.IntValue rodCloneMaxLength;
-        public final ForgeConfigSpec.IntValue rodReincarnationMaxLength;
+        public final ForgeConfigSpec.IntValue rodRecollectionMaxLength;
         public final ForgeConfigSpec.IntValue rodMeasurementMaxLength;
-        public final ForgeConfigSpec.BooleanValue rodReincarnationInitialFreeBuild;
+        public final ForgeConfigSpec.BooleanValue rodRecollectionInitialFreeBuild;
 
         public Common(ForgeConfigSpec.Builder builder) {
             isDebugging = builder
@@ -20,15 +20,15 @@ public class ConfigHandler {
             rodCloneMaxLength = builder
                 .comment("Max length of selecting area for Rod of Clone/Transfer.")
                 .defineInRange("rodClone.maxLength", 64, 1, Integer.MAX_VALUE);
-            rodReincarnationMaxLength = builder
-                .comment("Max length of selecting area for Rod of Reincarnation.")
-                .defineInRange("rodReincarnation.maxLength", 64, 1, Integer.MAX_VALUE);
+            rodRecollectionMaxLength = builder
+                .comment("Max length of selecting area for Rod of Recollection.")
+                .defineInRange("rodRecollection.maxLength", 64, 1, Integer.MAX_VALUE);
             rodMeasurementMaxLength = builder
                 .comment("Max num of generates Measuring Block when use Rod of Measurement.")
                 .defineInRange("rodMeasurement.maxLength", 50, 1, Integer.MAX_VALUE);
-            rodReincarnationInitialFreeBuild = builder
+            rodRecollectionInitialFreeBuild = builder
                 .comment("No use.")
-                .define("rodReincarnationInitialFreeBuild", true);
+                .define("rodRecollectionInitialFreeBuild", true);
         }
     }
 

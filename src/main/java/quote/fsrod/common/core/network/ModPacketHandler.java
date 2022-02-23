@@ -4,6 +4,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 import quote.fsrod.common.core.network.item.CPacketItemNotify;
+import quote.fsrod.common.core.network.item.CPacketItemUpdateSplitTagList;
 import quote.fsrod.common.core.network.item.CPacketItemUpdateTag;
 import quote.fsrod.common.lib.LibMisc;
 
@@ -22,6 +23,7 @@ public class ModPacketHandler {
         int id = 0;
 
         CHANNEL.registerMessage(id++, CPacketItemUpdateTag.class, CPacketItemUpdateTag::encode, CPacketItemUpdateTag::new, CPacketItemUpdateTag.Handler::onMessage);
+        CHANNEL.registerMessage(id++, CPacketItemUpdateSplitTagList.class, CPacketItemUpdateSplitTagList::encode, CPacketItemUpdateSplitTagList::new, CPacketItemUpdateSplitTagList.Handler::onMessage);
         CHANNEL.registerMessage(id++, CPacketItemNotify.class, CPacketItemNotify::encode, CPacketItemNotify::new, CPacketItemNotify.Handler::onMessage);
     }
 }

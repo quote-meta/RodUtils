@@ -15,6 +15,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -23,8 +24,15 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import quote.fsrod.common.core.helper.rod.RodCloneHelper;
+import quote.fsrod.common.core.helper.rod.RodRecollectionHelper;
 import quote.fsrod.common.core.helper.rod.SpaceReader;
+import quote.fsrod.common.item.rod.RodCloneItem;
+import quote.fsrod.common.item.rod.RodRecollectionItem;
+import quote.fsrod.common.item.rod.RodTransferItem;
+import quote.fsrod.common.item.utils.IItemHasFileData;
 import quote.fsrod.common.item.utils.IItemHasSpaceInfoTag;
+import quote.fsrod.common.item.utils.IItemHasSplitTagList;
+import quote.fsrod.common.item.utils.IItemHasStructureData;
 
 public class ModRenderLevelHandler {
     private Camera camera;
@@ -54,7 +62,7 @@ public class ModRenderLevelHandler {
         Player player = Minecraft.getInstance().player;
         ItemStack stackMainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         float partialTicks = event.getPartialTick();
-        if(stackMainHand.getItem() instanceof IItemHasSpaceInfoTag){
+        if(RodCloneItem.isItemOf(stackMainHand) || RodTransferItem.isItemOf(stackMainHand)){
             Optional<String> possibleDimension = IItemHasSpaceInfoTag.getDimension(stackMainHand);
             Optional<BlockPos> possibleBlockPosNear = IItemHasSpaceInfoTag.getBlockPosNear(stackMainHand);
             Optional<BlockPos> possibleBlockPosEnd = IItemHasSpaceInfoTag.getBlockPosEnd(stackMainHand);
@@ -88,6 +96,48 @@ public class ModRenderLevelHandler {
             });
             
             renderFakeBlockFX(blockPosSeeing);
+        }
+        if(RodRecollectionItem.isItemOf(stackMainHand)){
+            if(!IItemHasFileData.getFileName(stackMainHand).isEmpty()){
+                BlockPos blockPosSeeing = RodCloneHelper.getBlockPosSeeing(stackMainHand, player, partialTicks);
+                CompoundTag tag = stackMainHand.getOrCreateTag();
+                if(!tag.getCompound(IItemHasStructureData.TAG_STRUCTURE_DATA).isEmpty() && tag.getCompound(IItemHasSplitTagList.TAG_SPLIT).isEmpty()){
+                    // load mode
+                    Optional<BlockPos> possibleBlockPosScheduled = IItemHasSpaceInfoTag.getBlockPosScheduled(stackMainHand);
+                    possibleBlockPosScheduled.ifPresent(blockPosScheduled -> {
+                        BlockPos blockDiff = RodRecollectionHelper.getBlockPosData(stackMainHand);
+                        if(blockDiff != null){
+                            Direction direction = IItemHasSpaceInfoTag.getFacingScheduled(stackMainHand).orElse(Direction.NORTH);
+                            AABB aabbDst = SpaceReader.getScheduledAABB(blockPosScheduled, blockDiff, direction);
+                            renderFakeFrameFX(aabbDst);
+                            renderFakeBlockFX(blockPosScheduled);
+                        }
+                    });
+                }
+                else{
+                    Optional<String> possibleDimension = IItemHasSpaceInfoTag.getDimension(stackMainHand);
+                    Optional<BlockPos> possibleBlockPosNear = IItemHasSpaceInfoTag.getBlockPosNear(stackMainHand);
+                    Optional<BlockPos> possibleBlockPosEnd = IItemHasSpaceInfoTag.getBlockPosEnd(stackMainHand);
+        
+                    possibleDimension.ifPresent(dimension -> {
+                        if(!player.level.dimension().location().toString().equals(dimension)) return;
+                        possibleBlockPosNear.ifPresent(blockPosNear -> {
+                            possibleBlockPosEnd.ifPresentOrElse(blockPosEnd -> {
+                                AABB aabbSrc = new AABB(blockPosNear, blockPosEnd).expandTowards(1, 1, 1);
+                                renderFakeFrameFX(aabbSrc);
+                                renderFakeBlockFX(blockPosNear);
+                            }, () -> {
+                                AABB aabbSrc = new AABB(blockPosNear, blockPosSeeing).expandTowards(1, 1, 1);
+                                renderFakeFrameFX(aabbSrc);
+                                renderFakeBlockFX(blockPosNear);
+                            });
+                        });
+                    });
+
+                }
+                renderFakeBlockFX(blockPosSeeing);
+                
+            }
         }
     }
 

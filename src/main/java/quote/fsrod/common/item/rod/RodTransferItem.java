@@ -63,7 +63,7 @@ public class RodTransferItem extends Item implements IItemHasSpaceInfoTag, IItem
 
                         if(aabbSrc.intersects(aabbDst)){
                             String path = stack.getItem().getRegistryName().getPath();
-                            ChatUtils.sendTranslatedChat(player, ChatFormatting.RED, "message.fsrod." + path + ".warning.rangesInterfere");
+                            ChatUtils.sendTranslatedChat(player, ChatFormatting.RED, "message.fsrod." + path + ".warning.ranges_interfere");
                             return;
                         }
 

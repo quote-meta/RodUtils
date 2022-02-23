@@ -7,7 +7,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.event.InputEvent.MouseScrollEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import quote.fsrod.common.core.helper.rod.RodCloneHelper;
+import quote.fsrod.common.core.helper.rod.RodRecollectionHelper;
 import quote.fsrod.common.item.rod.RodCloneItem;
+import quote.fsrod.common.item.rod.RodRecollectionItem;
 import quote.fsrod.common.item.rod.RodTransferItem;
 
 public class InputEventHandler {
@@ -23,6 +25,9 @@ public class InputEventHandler {
         }
         if(player.level.isClientSide && (RodTransferItem.isItemOf(stackMainHand))){
             RodCloneHelper.onMouseScrollEvent(event, stackMainHand, player);
+        }
+        if(player.level.isClientSide && (RodRecollectionItem.isItemOf(stackMainHand))){
+            RodRecollectionHelper.onMouseScrollEvent(event, stackMainHand, player);
         }
     }
 }

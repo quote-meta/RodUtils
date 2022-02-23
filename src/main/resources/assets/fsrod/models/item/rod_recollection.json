@@ -2,12 +2,12 @@
 	"credit": "Made with Blockbench",
 	"texture_size": [32, 32],
 	"textures": {
-		"0": "fsrod:models/rod_reincarnation0",
-		"1": "fsrod:models/rod_reincarnation1",
-		"2": "fsrod:models/rod_reincarnation2",
-		"3": "fsrod:models/rod_reincarnation3",
-		"4": "fsrod:models/rod_reincarnation4",
-		"particle": "fsrod:models/rod_reincarnation0"
+		"0": "fsrod:models/rod_recollection0",
+		"1": "fsrod:models/rod_recollection1",
+		"2": "fsrod:models/rod_recollection2",
+		"3": "fsrod:models/rod_recollection3",
+		"4": "fsrod:models/rod_recollection4",
+		"particle": "fsrod:models/rod_recollection0"
 	},
 	"elements": [
 		{
