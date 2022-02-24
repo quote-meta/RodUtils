@@ -8,6 +8,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -16,6 +18,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Rotation;
@@ -34,6 +37,21 @@ public class RodRecollectionItem extends Item implements IItemHasSpaceInfoTag, I
 
     public RodRecollectionItem(Properties p) {
         super(p);
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag tooltipFlag) {
+        tooltip.add(new TranslatableComponent(this.getDescriptionId() + ".info"));
+        CompoundTag tag = stack.getTag();
+        String fileName = "";
+        if (tag != null) {
+            fileName = tag.getString(TAG_FILE_NAME);
+        }
+        if (fileName.isEmpty()) {
+            tooltip.add(new TranslatableComponent(this.getDescriptionId() + ".info.nofilename"));
+        } else {
+            tooltip.add(new TranslatableComponent(this.getDescriptionId() + ".info.filename", fileName));
+        }
     }
 
     public static final String PATH = "share_data/fancifulspecters/recollection/";
