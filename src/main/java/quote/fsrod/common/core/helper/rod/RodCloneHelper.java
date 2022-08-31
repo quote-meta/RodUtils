@@ -11,7 +11,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
+import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.client.event.InputEvent.MouseScrollEvent;
+import quote.fsrod.client.core.render.CloneSpaceRenderer;
 import quote.fsrod.client.core.utils.RenderUtils;
 import quote.fsrod.common.core.helper.rod.state.IRodState;
 import quote.fsrod.common.core.helper.rod.state.RodStateBuilding;
@@ -79,39 +81,46 @@ public class RodCloneHelper {
         return new RodStateBuilding();
     }
 
-    public static void drawFakeBlocks(Player player, ItemStack stackMainHand, float partialTicks){
+    public static void drawFakeBlocks(Player player, ItemStack stackMainHand, float partialTicks, RenderLevelLastEvent event){
         Optional<String> possibleDimension = IItemHasSpaceInfoTag.getDimension(stackMainHand);
         Optional<BlockPos> possibleBlockPosNear = IItemHasSpaceInfoTag.getBlockPosNear(stackMainHand);
         Optional<BlockPos> possibleBlockPosEnd = IItemHasSpaceInfoTag.getBlockPosEnd(stackMainHand);
         Optional<BlockPos> possibleBlockPosScheduled = IItemHasSpaceInfoTag.getBlockPosScheduled(stackMainHand);
         BlockPos blockPosSeeing = SpaceReader.getBlockPosSeeing(stackMainHand, player, partialTicks);
 
+        int r = 100;
+        int g = 100;
+        int b = 200;
+        int a = 200;
+
         possibleDimension.ifPresent(dimension -> {
             if(!player.level.dimension().location().toString().equals(dimension)) return;
             possibleBlockPosNear.ifPresent(blockPosNear -> {
                 possibleBlockPosEnd.ifPresentOrElse(blockPosEnd -> {
                     possibleBlockPosScheduled.ifPresentOrElse(blockPosScheduled -> {
-                        RenderUtils.renderFakeBlockFX(blockPosScheduled);
 
                         Direction direction = IItemHasSpaceInfoTag.getFacingScheduled(stackMainHand).orElse(Direction.NORTH);
+                        CloneSpaceRenderer.renderSpace(player.level, blockPosNear, blockPosEnd, direction, blockPosScheduled, event);
+                        
                         AABB aabbDst = SpaceReader.getScheduledAABB(blockPosNear, blockPosEnd, direction, blockPosScheduled);
-                        RenderUtils.renderFakeFrameFX(aabbDst);
+                        RenderUtils.renderFakeFrameFX(aabbDst, event.getPoseStack(), r, g, b, a);
+                        RenderUtils.renderFakeBlockFX(blockPosScheduled, event.getPoseStack(), r, g, b, a);
 
                     }, () -> {
                         AABB aabbDst = SpaceReader.getScheduledAABB(blockPosNear, blockPosEnd, player, blockPosSeeing);
-                        RenderUtils.renderFakeFrameFX(aabbDst);
+                        RenderUtils.renderFakeFrameFX(aabbDst, event.getPoseStack(), r, g, b, a);
                     });
                     AABB aabbSrc = new AABB(blockPosNear, blockPosEnd).expandTowards(1, 1, 1);
-                    RenderUtils.renderFakeFrameFX(aabbSrc);
-                    RenderUtils.renderFakeBlockFX(blockPosNear);
+                    RenderUtils.renderFakeFrameFX(aabbSrc, event.getPoseStack(), r, g, b, a);
+                    RenderUtils.renderFakeBlockFX(blockPosNear, event.getPoseStack(), r, g, b, a);
                 }, () -> {
                     AABB aabbSrc = new AABB(blockPosNear, blockPosSeeing).expandTowards(1, 1, 1);
-                    RenderUtils.renderFakeFrameFX(aabbSrc);
-                    RenderUtils.renderFakeBlockFX(blockPosNear);
+                    RenderUtils.renderFakeFrameFX(aabbSrc, event.getPoseStack(), r, g, b, a);
+                    RenderUtils.renderFakeBlockFX(blockPosNear, event.getPoseStack(), r, g, b, a);
                 });
             });
         });
         
-        RenderUtils.renderFakeBlockFX(blockPosSeeing);
+        RenderUtils.renderFakeBlockFX(blockPosSeeing, event.getPoseStack(), r, g, b, a);
     }
 }

@@ -1,12 +1,11 @@
 package quote.fsrod.client.core.handler;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import quote.fsrod.common.core.helper.rod.RodCloneHelper;
@@ -18,17 +17,21 @@ import quote.fsrod.common.item.rod.RodTransferItem;
 public class ModRenderLevelHandler {
     
     @SubscribeEvent
+    @SuppressWarnings("resource")
     public void onDrawLevelPost(RenderLevelLastEvent event){
-        PoseStack stack = event.getPoseStack();
-        PoseStack posestack = RenderSystem.getModelViewStack();
-        posestack.pushPose();
-        posestack.mulPoseMatrix(stack.last().pose());
-        RenderSystem.applyModelViewMatrix();
+        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+        Vec3 vec = camera.getPosition();
+        double x0 = vec.x;
+        double y0 = vec.y;
+        double z0 = vec.z;
+
+        event.getPoseStack().pushPose();
+        event.getPoseStack().translate(-x0, -y0, -z0);
 
         drawFakeBlocks(event);
+        Minecraft.getInstance().renderBuffers().bufferSource().endBatch();
 
-        posestack.popPose();
-        RenderSystem.applyModelViewMatrix();
+        event.getPoseStack().pushPose();
     }
 
     @SuppressWarnings("resource")
@@ -36,11 +39,12 @@ public class ModRenderLevelHandler {
         Player player = Minecraft.getInstance().player;
         ItemStack stackMainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         float partialTicks = event.getPartialTick();
+
         if(RodCloneItem.isItemOf(stackMainHand) || RodTransferItem.isItemOf(stackMainHand)){
-            RodCloneHelper.drawFakeBlocks(player, stackMainHand, partialTicks);
+            RodCloneHelper.drawFakeBlocks(player, stackMainHand, partialTicks, event);
         }
         if(RodRecollectionItem.isItemOf(stackMainHand)){
-            RodRecollectionHelper.drawFakeBlocks(player, stackMainHand, partialTicks);
+            RodRecollectionHelper.drawFakeBlocks(player, stackMainHand, partialTicks, event);
         }
     }
 }

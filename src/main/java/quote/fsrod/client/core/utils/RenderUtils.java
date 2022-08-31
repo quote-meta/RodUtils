@@ -4,18 +4,40 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.math.Matrix3f;
+import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector3f;
 
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class RenderUtils {
+
+    public static void renderFakeBlockFX(BlockPos pos, PoseStack poseStack, int r, int g, int b, int a){
+        BufferSource bufferSource = ModBufferSource.get();
+        drawFakeBlockFX(poseStack, bufferSource, pos, r, g, b, a);
+    }
+
+    public static void renderFakeFrameFX(AABB aabb, PoseStack poseStack, int r, int g, int b, int a){
+        BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
+        Vec3 vecNear = new Vec3(aabb.minX, aabb.minY, aabb.minZ);
+        Vec3 vecEnd = new Vec3(aabb.maxX, aabb.maxY, aabb.maxZ);
+        drawBoxFrameFX(poseStack, bufferSource, vecNear, vecEnd, r, g, b, a);
+    }
     
+    /**
+     * only use after applying modelViewMatrix
+     * @param pos
+     */
     @SuppressWarnings("resource")
     public static void renderFakeBlockFX(BlockPos pos){
         RenderSystem.disableTexture();
@@ -31,6 +53,10 @@ public class RenderUtils {
         drawFakeBlockFX(tesselator, buffer, pos, camera);
     }
 
+    /**
+     * only use after applying modelViewMatrix
+     * @param aabb
+     */
     @SuppressWarnings("resource")
     public static void renderFakeFrameFX(AABB aabb){
         RenderSystem.disableTexture();
@@ -45,6 +71,87 @@ public class RenderUtils {
         Vec3 posNear = new Vec3(aabb.minX, aabb.minY, aabb.minZ);
         Vec3 posEnd = new Vec3(aabb.maxX, aabb.maxY, aabb.maxZ);
         drawBoxFrameFX(tesselator, buffer, posNear, posEnd, camera);
+    }
+
+    private static void drawFakeBlockFX(PoseStack poseStack, BufferSource bufferSource, BlockPos pos, int r, int g, int b, int a){
+        Matrix4f matrix4f = poseStack.last().pose();
+        Matrix3f matrix3f = poseStack.last().normal();
+
+        float inflate = 0.001f;
+        float x0 = (float)pos.getX() -inflate;
+        float y0 = (float)pos.getY() -inflate;
+        float z0 = (float)pos.getZ() -inflate;
+        float x1 = (float)pos.getX() + 1 + inflate;
+        float y1 = (float)pos.getY() + 1 + inflate;
+        float z1 = (float)pos.getZ() + 1 + inflate;
+
+        VertexConsumer vertexConsumer;
+        vertexConsumer = bufferSource.getBuffer(ModRenderType.BOX);
+        vertexConsumer.vertex(matrix4f, x0, y1, z0).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y1, z0).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y0, z0).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y0, z0).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y0, z1).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y0, z1).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y1, z1).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y1, z1).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y0, z0).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y0, z0).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y0, z1).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y0, z1).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y1, z1).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y1, z1).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y1, z0).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y1, z0).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y0, z1).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y1, z1).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y1, z0).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y0, z0).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y0, z0).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y1, z0).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y1, z1).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y0, z1).color(r, g, b, a).normal(matrix3f, 1.0F, 1.0F, 1.0F).endVertex();
+        bufferSource.endBatch(ModRenderType.BOX);
+    }
+
+    private static void drawBoxFrameFX(PoseStack poseStack, BufferSource bufferSource, Vec3 vecNear, Vec3 vecEnd, int r, int g, int b, int a){
+        Matrix4f matrix4f = poseStack.last().pose();
+        Matrix3f matrix3f = poseStack.last().normal();
+
+        float x0 = (float)vecNear.x;
+        float y0 = (float)vecNear.y;
+        float z0 = (float)vecNear.z;
+        float x1 = (float)vecEnd.x;
+        float y1 = (float)vecEnd.y;
+        float z1 = (float)vecEnd.z;
+
+        VertexConsumer vertexConsumer;
+        vertexConsumer = bufferSource.getBuffer(RenderType.lines());
+        vertexConsumer.vertex(matrix4f, x0, y0, z0).color(r, g, b, a).normal(matrix3f, 1.0F, 0.0F, 0.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y0, z0).color(r, g, b, a).normal(matrix3f, 1.0F, 0.0F, 0.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y0, z0).color(r, g, b, a).normal(matrix3f, 0.0F, 1.0F, 0.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y1, z0).color(r, g, b, a).normal(matrix3f, 0.0F, 1.0F, 0.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y0, z0).color(r, g, b, a).normal(matrix3f, 0.0F, 0.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y0, z1).color(r, g, b, a).normal(matrix3f, 0.0F, 0.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y0, z0).color(r, g, b, a).normal(matrix3f, 0.0F, 1.0F, 0.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y1, z0).color(r, g, b, a).normal(matrix3f, 0.0F, 1.0F, 0.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y1, z0).color(r, g, b, a).normal(matrix3f, -1.0F, 0.0F, 0.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y1, z0).color(r, g, b, a).normal(matrix3f, -1.0F, 0.0F, 0.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y1, z0).color(r, g, b, a).normal(matrix3f, 0.0F, 0.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y1, z1).color(r, g, b, a).normal(matrix3f, 0.0F, 0.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y1, z1).color(r, g, b, a).normal(matrix3f, 0.0F, -1.0F, 0.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y0, z1).color(r, g, b, a).normal(matrix3f, 0.0F, -1.0F, 0.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y0, z1).color(r, g, b, a).normal(matrix3f, 1.0F, 0.0F, 0.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y0, z1).color(r, g, b, a).normal(matrix3f, 1.0F, 0.0F, 0.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y0, z1).color(r, g, b, a).normal(matrix3f, 0.0F, 0.0F, -1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y0, z0).color(r, g, b, a).normal(matrix3f, 0.0F, 0.0F, -1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x0, y1, z1).color(r, g, b, a).normal(matrix3f, 1.0F, 0.0F, 0.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y1, z1).color(r, g, b, a).normal(matrix3f, 1.0F, 0.0F, 0.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y0, z1).color(r, g, b, a).normal(matrix3f, 0.0F, 1.0F, 0.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y1, z1).color(r, g, b, a).normal(matrix3f, 0.0F, 1.0F, 0.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y1, z0).color(r, g, b, a).normal(matrix3f, 0.0F, 0.0F, 1.0F).endVertex();
+        vertexConsumer.vertex(matrix4f, x1, y1, z1).color(r, g, b, a).normal(matrix3f, 0.0F, 0.0F, 1.0F).endVertex();
+        bufferSource.endBatch(RenderType.lines());
     }
 
     private static void drawFakeBlockFX(Tesselator tesselator, BufferBuilder builder, BlockPos pos, Camera camera){

@@ -16,6 +16,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.client.event.InputEvent.MouseScrollEvent;
 import quote.fsrod.client.core.utils.RenderUtils;
 import quote.fsrod.common.core.helper.rod.state.IRodState;
@@ -136,7 +137,7 @@ public class RodRecollectionHelper {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public static void drawFakeBlocks(Player player, ItemStack stackMainHand, float partialTicks){
+    public static void drawFakeBlocks(Player player, ItemStack stackMainHand, float partialTicks, RenderLevelLastEvent event){
         if(!IItemHasFileData.getFileName(stackMainHand).isEmpty()){
             BlockPos blockPosSeeing = SpaceReader.getBlockPosSeeing(stackMainHand, player, partialTicks);
             CompoundTag tag = stackMainHand.getOrCreateTag();
