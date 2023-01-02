@@ -3,6 +3,7 @@ package quote.fsrod.common.core.network.item;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -18,6 +19,8 @@ import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
 import quote.fsrod.common.item.utils.IItemHasSplitTagList;
 import quote.fsrod.common.item.utils.IItemHasUUID;
+import quote.fsrod.common.property.item.ISplitListDataProperty;
+import quote.fsrod.common.property.item.SplitListDataProperty;
 
 // HACK: サーバとのアイテムの同期がずれると危険かもしれない
 public class CPacketItemUpdateSplitTagList {
@@ -95,7 +98,10 @@ public class CPacketItemUpdateSplitTagList {
 
         private static void handleSplitTagList(Player player, ItemStack stack, CompoundTag tagPart, int max, int tagType, UUID uuidSplit){
             //get
-            CompoundTag tagSplit = ((IItemHasSplitTagList)stack.getItem()).getTagSplit(player, stack);
+            Optional<ISplitListDataProperty> property = SplitListDataProperty.of(stack);
+            if(property.isEmpty()) return;
+
+            CompoundTag tagSplit = property.map(p -> p.getTag(uuidSplit)).orElse(new CompoundTag());
             UUID uuidSplitStack = tagSplit.isEmpty() ? UUID.randomUUID(): tagSplit.getUUID(IItemHasSplitTagList.TAG_SPLIT_UUID);
             int maxSplitStack = tagSplit.getInt(IItemHasSplitTagList.TAG_SPLIT_MAX);
             int tagTypeStack = tagSplit.getInt(IItemHasSplitTagList.TAG_SPLIT_TAG_TYPE);
@@ -104,7 +110,6 @@ public class CPacketItemUpdateSplitTagList {
             //check same
             if(!uuidSplitStack.equals(uuidSplit) || maxSplitStack != max || tagTypeStack != tagType){
                 //reset
-                tagSplit = new CompoundTag();
                 tagSplitParts = new ListTag();
                 uuidSplitStack = uuidSplit;
                 maxSplitStack = max;
@@ -120,9 +125,6 @@ public class CPacketItemUpdateSplitTagList {
     
             //append
             tagSplitParts.add(tagPart);
-    
-            //set
-            ((IItemHasSplitTagList)stack.getItem()).putTagSplit(player, stack, tagSplit);
             
             //check complete
             if(tagSplitParts.size() == maxSplitStack){
@@ -152,7 +154,7 @@ public class CPacketItemUpdateSplitTagList {
                     //hook
                     ((IItemHasSplitTagList)stack.getItem()).onCompleteMergingSplitList(player, stack, tagListMerged);
                 }
-                ((IItemHasSplitTagList)stack.getItem()).removeTagSplit(player, stack);
+                property.ifPresent(p -> p.removeTag(uuidSplit));
             }
         }
     }

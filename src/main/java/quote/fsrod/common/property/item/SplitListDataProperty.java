@@ -1,5 +1,10 @@
 package quote.fsrod.common.property.item;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -14,44 +19,54 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import quote.fsrod.common.lib.LibMisc;
 import quote.fsrod.common.lib.LibProperty;
 
-public class SplitDataCapability implements ISplitDataCapability, ICapabilitySerializable<Tag> {
+public class SplitListDataProperty implements ISplitListDataProperty, ICapabilitySerializable<Tag> {
     
     public static final ResourceLocation ID = new ResourceLocation(LibMisc.MOD_ID, LibProperty.SPLIT_DATA);
 
-    private static Capability<ISplitDataCapability> INSTANCE = CapabilityManager.get(new CapabilityToken<>(){});
+    private static Capability<ISplitListDataProperty> INSTANCE = CapabilityManager.get(new CapabilityToken<>(){});
 
     //
     // ================== Parameters =======================
     //
 
-    private final ItemStack itemStack;
+    private final Map<UUID, CompoundTag> splitTagMap;
 
     //
     // ================== Utility ==========================
     //
 
     public static void addCapability(ItemStack itemStack, AttachCapabilitiesEvent<ItemStack> event){
-        StructureDataProperty property = new StructureDataProperty(itemStack);
+        SplitListDataProperty property = new SplitListDataProperty(itemStack);
         property.init();
         event.addCapability(ID, property);
     }
 
-    public static LazyOptional<ISplitDataCapability> of(ItemStack stack){
-        return stack.getCapability(INSTANCE, null);
+    public static Optional<ISplitListDataProperty> of(ItemStack stack){
+        return Optional.ofNullable(stack.getCapability(INSTANCE, null).orElse(null));
     }
 
     //
     // ===================== Accessor ========================
     //
 
+    @Override
+    public CompoundTag getTag(UUID uuid) {
+        return splitTagMap.getOrDefault(uuid, new CompoundTag());
+    }
 
+    @Override
+    public void removeTag(UUID uuid) {
+        splitTagMap.remove(uuid);
+    }
 
     //
     // =====================================================
     //
 
-    public SplitDataCapability(ItemStack itemStack){
-        this.itemStack = itemStack;
+
+
+    public SplitListDataProperty(ItemStack itemStack){
+        this.splitTagMap = new HashMap<>();
     }
 
     public void init(){

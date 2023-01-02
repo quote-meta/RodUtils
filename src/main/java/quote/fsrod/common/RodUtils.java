@@ -19,7 +19,7 @@ import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import quote.fsrod.common.core.handler.ConfigHandler;
-import quote.fsrod.common.core.handler.ItemStackHandler;
+import quote.fsrod.common.core.handler.ItemStackCapabilityHandler;
 import quote.fsrod.common.core.handler.PlayerHandler;
 import quote.fsrod.common.core.network.ModPacketHandler;
 
@@ -40,7 +40,7 @@ public class RodUtils {
     private void setupCommon(final FMLCommonSetupEvent event) {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigHandler.COMMON_SPEC);
         MinecraftForge.EVENT_BUS.register(new PlayerHandler());
-        MinecraftForge.EVENT_BUS.register(new ItemStackHandler());
+        MinecraftForge.EVENT_BUS.register(new ItemStackCapabilityHandler());
         ModPacketHandler.init();
     }
 

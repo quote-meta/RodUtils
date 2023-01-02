@@ -7,7 +7,6 @@ import net.minecraft.nbt.ListTag;
 import quote.fsrod.common.structure.BasicStructure;
 
 public interface IStructureDataProperty {
-    public void receiveSplittedStructureData();
     public void completeMergingStructureData(ListTag mergedTagList);
     public void bindStuctureData(BasicStructure structureData);
 

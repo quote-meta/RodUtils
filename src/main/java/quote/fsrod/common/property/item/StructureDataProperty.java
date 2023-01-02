@@ -67,13 +67,8 @@ public class StructureDataProperty implements IStructureDataProperty, ICapabilit
     //
 
     @Override
-    public void receiveSplittedStructureData() {
-        
-    }
-
-    @Override
     public void completeMergingStructureData(ListTag mergedTagList) {
-        CompoundTag tagStuctureData = this.itemStack.getOrCreateTag().getCompound(IItemHasStructureData.TAG_STRUCTURE_DATA);
+        CompoundTag tagStuctureData = this.itemStack.getOrCreateTag().getCompound(IItemHasStructureData.TAG_STRUCTURE_DATA).copy();
         tagStuctureData.put(BasicStructure.TAG_DATA_STATE_NUMS, mergedTagList);
         structureData = new BasicStructure(tagStuctureData);
 
