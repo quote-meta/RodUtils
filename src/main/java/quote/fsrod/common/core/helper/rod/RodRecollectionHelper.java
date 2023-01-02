@@ -138,6 +138,11 @@ public class RodRecollectionHelper {
 
     @OnlyIn(Dist.CLIENT)
     public static void drawFakeBlocks(Player player, ItemStack stackMainHand, float partialTicks, RenderLevelLastEvent event){
+        int r = 100;
+        int g = 100;
+        int b = 200;
+        int a = 200;
+
         if(!IItemHasFileData.getFileName(stackMainHand).isEmpty()){
             BlockPos blockPosSeeing = SpaceReader.getBlockPosSeeing(stackMainHand, player, partialTicks);
             CompoundTag tag = stackMainHand.getOrCreateTag();
@@ -149,8 +154,8 @@ public class RodRecollectionHelper {
                     if(blockDiff != null){
                         Direction direction = IItemHasSpaceInfoTag.getFacingScheduled(stackMainHand).orElse(Direction.NORTH);
                         AABB aabbDst = SpaceReader.getScheduledAABB(blockPosScheduled, blockDiff, direction);
-                        RenderUtils.renderFakeFrameFX(aabbDst);
-                        RenderUtils.renderFakeBlockFX(blockPosScheduled);
+                        RenderUtils.renderFakeFrameFX(aabbDst, event.getPoseStack(), r, g, b, a);
+                        RenderUtils.renderFakeBlockFX(blockPosScheduled, event.getPoseStack(), r, g, b, a);
                     }
                 });
             }
@@ -164,18 +169,18 @@ public class RodRecollectionHelper {
                     possibleBlockPosNear.ifPresent(blockPosNear -> {
                         possibleBlockPosEnd.ifPresentOrElse(blockPosEnd -> {
                             AABB aabbSrc = new AABB(blockPosNear, blockPosEnd).expandTowards(1, 1, 1);
-                            RenderUtils.renderFakeFrameFX(aabbSrc);
-                            RenderUtils.renderFakeBlockFX(blockPosNear);
+                            RenderUtils.renderFakeFrameFX(aabbSrc, event.getPoseStack(), r, g, b, a);
+                            RenderUtils.renderFakeBlockFX(blockPosNear, event.getPoseStack(), r, g, b, a);
                         }, () -> {
                             AABB aabbSrc = new AABB(blockPosNear, blockPosSeeing).expandTowards(1, 1, 1);
-                            RenderUtils.renderFakeFrameFX(aabbSrc);
-                            RenderUtils.renderFakeBlockFX(blockPosNear);
+                            RenderUtils.renderFakeFrameFX(aabbSrc, event.getPoseStack(), r, g, b, a);
+                            RenderUtils.renderFakeBlockFX(blockPosNear, event.getPoseStack(), r, g, b, a);
                         });
                     });
                 });
 
             }
-            RenderUtils.renderFakeBlockFX(blockPosSeeing);
+            RenderUtils.renderFakeBlockFX(blockPosSeeing, event.getPoseStack(), r, g, b, a);
         }
     }
 }
