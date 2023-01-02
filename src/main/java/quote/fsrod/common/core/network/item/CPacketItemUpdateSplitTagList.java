@@ -95,8 +95,7 @@ public class CPacketItemUpdateSplitTagList {
 
         private static void handleSplitTagList(Player player, ItemStack stack, CompoundTag tagPart, int max, int tagType, UUID uuidSplit){
             //get
-            CompoundTag tag = stack.getOrCreateTag();
-            CompoundTag tagSplit = tag.getCompound(IItemHasSplitTagList.TAG_SPLIT);
+            CompoundTag tagSplit = ((IItemHasSplitTagList)stack.getItem()).getTagSplit(player, stack);
             UUID uuidSplitStack = tagSplit.isEmpty() ? UUID.randomUUID(): tagSplit.getUUID(IItemHasSplitTagList.TAG_SPLIT_UUID);
             int maxSplitStack = tagSplit.getInt(IItemHasSplitTagList.TAG_SPLIT_MAX);
             int tagTypeStack = tagSplit.getInt(IItemHasSplitTagList.TAG_SPLIT_TAG_TYPE);
@@ -123,7 +122,7 @@ public class CPacketItemUpdateSplitTagList {
             tagSplitParts.add(tagPart);
     
             //set
-            tag.put(IItemHasSplitTagList.TAG_SPLIT, tagSplit);
+            ((IItemHasSplitTagList)stack.getItem()).putTagSplit(player, stack, tagSplit);
             
             //check complete
             if(tagSplitParts.size() == maxSplitStack){
@@ -153,10 +152,7 @@ public class CPacketItemUpdateSplitTagList {
                     //hook
                     ((IItemHasSplitTagList)stack.getItem()).onCompleteMergingSplitList(player, stack, tagListMerged);
                 }
-                tag.remove(IItemHasSplitTagList.TAG_SPLIT);
-                if(tag.isEmpty()){
-                    stack.setTag(null);
-                }
+                ((IItemHasSplitTagList)stack.getItem()).removeTagSplit(player, stack);
             }
         }
     }

@@ -9,6 +9,8 @@ import quote.fsrod.common.core.utils.ChatUtils;
 import quote.fsrod.common.item.utils.IItemHasFileData;
 import quote.fsrod.common.item.utils.IItemHasSpaceInfoTag;
 import quote.fsrod.common.item.utils.IItemHasStructureData;
+import quote.fsrod.common.property.item.StructureDataProperty;
+import quote.fsrod.common.structure.BasicStructure;
 
 public class RodStateLoadSpace implements IRodState{
 
@@ -41,10 +43,10 @@ public class RodStateLoadSpace implements IRodState{
             ChatUtils.sendTranslatedChat(player, ChatFormatting.RED, "message.fsrod." + path + ".use.load.failed");
             return;
         }
+        
+        IItemHasStructureData.sendToServer(stack, tag);
 
-        CompoundTag tagStack = stack.getOrCreateTag();
-        tagStack.put(IItemHasStructureData.TAG_STRUCTURE_DATA, tag);
-        IItemHasStructureData.sendSplitNBTTagToServer(stack);
-        tagStack.remove(IItemHasStructureData.TAG_STRUCTURE_DATA);
+        BasicStructure structureData = new BasicStructure(tag);
+        StructureDataProperty.of(stack).ifPresent(p -> p.bindStuctureData(structureData));
     }
 }

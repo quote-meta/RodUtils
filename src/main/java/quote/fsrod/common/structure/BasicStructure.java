@@ -31,6 +31,10 @@ public class BasicStructure implements IStructure {
 
     private ResourceLocation path;
 
+    public BasicStructure(CompoundTag nbt) {
+        this(nbt, new ResourceLocation(""));
+    }
+
     public BasicStructure(CompoundTag nbt, ResourceLocation path) {
         deserializeNBT(nbt);
         this.path = path;

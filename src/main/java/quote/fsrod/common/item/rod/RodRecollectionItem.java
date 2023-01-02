@@ -10,7 +10,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -31,6 +30,8 @@ import quote.fsrod.common.item.utils.IItemHasSpaceInfoTag;
 import quote.fsrod.common.item.utils.IItemHasStructureData;
 import quote.fsrod.common.item.utils.IItemHasUUID;
 import quote.fsrod.common.item.utils.IItemNotifyServer;
+import quote.fsrod.common.property.item.IStructureDataProperty;
+import quote.fsrod.common.property.item.StructureDataProperty;
 import quote.fsrod.common.structure.BasicStructure;
 
 public class RodRecollectionItem extends Item implements IItemHasSpaceInfoTag, IItemNotifyServer, IItemHasStructureData{
@@ -69,6 +70,10 @@ public class RodRecollectionItem extends Item implements IItemHasSpaceInfoTag, I
             int oldReach = tag.getInt(TAG_REACH_DISTANCE);
             int newReach = Mth.clamp(oldReach, 2, 10);
             tag.putInt(TAG_REACH_DISTANCE, newReach);
+
+            if(StructureDataProperty.of(stack).flatMap(IStructureDataProperty::getStructureData).isEmpty()){
+                tag.putBoolean(TAG_STRUCTURE_DATA_LOADED, false);
+            }
         }
         super.inventoryTick(stack, level, entity, itemSlot, isSelected);
     }
@@ -79,22 +84,22 @@ public class RodRecollectionItem extends Item implements IItemHasSpaceInfoTag, I
         Inventory inventory = player.getInventory();
         int size = inventory.getContainerSize();
 
-        CompoundTag tag = stack.getOrCreateTag();
+        Optional<IStructureDataProperty> property = StructureDataProperty.of(stack);
+        Optional<BasicStructure> possibleStructure = property.flatMap(IStructureDataProperty::getStructureData);
         Optional<BlockPos> possbleBlockPosScheduled = IItemHasSpaceInfoTag.getBlockPosScheduled(stack);
         Optional<Direction> possbleDirection = IItemHasSpaceInfoTag.getFacingScheduled(stack);
 
-        if(!tag.contains(TAG_STRUCTURE_DATA) || !possbleBlockPosScheduled.isPresent() || !possbleDirection.isPresent()){
+        if(!possibleStructure.isPresent() || !possbleBlockPosScheduled.isPresent() || !possbleDirection.isPresent()){
             String path = stack.getItem().getRegistryName().getPath();
-            ChatUtils.sendTranslatedChat(player, ChatFormatting.GREEN, "message.fsrod." + path + ".use.build.failed");
+            ChatUtils.sendTranslatedChat(player, ChatFormatting.RED, "message.fsrod." + path + ".use.build.failed");
             return;
         }
 
-        CompoundTag tagData = tag.getCompound(TAG_STRUCTURE_DATA);
         BlockPos posDst = possbleBlockPosScheduled.get();
         Direction direction = possbleDirection.get();
         Rotation rotation = SpaceReader.getRotation(Direction.EAST, direction);
 
-        BasicStructure structure = new BasicStructure(tagData, new ResourceLocation(""));
+        BasicStructure structure = possibleStructure.get();
         int sizeX = structure.getSizeX();
         int sizeY = structure.getSizeY();
         int sizeZ = structure.getSizeZ();
@@ -149,9 +154,8 @@ public class RodRecollectionItem extends Item implements IItemHasSpaceInfoTag, I
 
     @Override
     public void onCompleteMergingSplitList(Player player, ItemStack stack, ListTag nbtListMarged) {
-        CompoundTag tag = stack.getOrCreateTag();
-        CompoundTag tagStuctureData = tag.getCompound(TAG_STRUCTURE_DATA);
-        tagStuctureData.put(BasicStructure.TAG_DATA_STATE_NUMS, nbtListMarged);
+        StructureDataProperty.of(stack).ifPresent(p -> p.completeMergingStructureData(nbtListMarged));
+        stack.getOrCreateTag().putBoolean(TAG_STRUCTURE_DATA_LOADED, true);
 
         String path = stack.getItem().getRegistryName().getPath();
         ChatUtils.sendTranslatedChat(player, ChatFormatting.GREEN, "message.fsrod." + path + ".use.load.success");

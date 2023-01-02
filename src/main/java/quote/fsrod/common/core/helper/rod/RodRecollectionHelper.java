@@ -36,6 +36,7 @@ import quote.fsrod.common.item.utils.IItemHasSpaceInfoTag;
 import quote.fsrod.common.item.utils.IItemHasSplitTagList;
 import quote.fsrod.common.item.utils.IItemHasStructureData;
 import quote.fsrod.common.item.utils.IItemHasUUID;
+import quote.fsrod.common.property.item.StructureDataProperty;
 import quote.fsrod.common.structure.BasicStructure;
 
 public class RodRecollectionHelper {
@@ -91,7 +92,7 @@ public class RodRecollectionHelper {
         if(tag.getString(IItemHasFileData.TAG_FILE_NAME).isEmpty()) return new RodStateStandbyInput();
         if(IItemHasFileData.existsFile(stack)){
             // FILE => WORLD
-            if(!tag.getCompound(IItemHasStructureData.TAG_STRUCTURE_DATA).isEmpty() && tag.getCompound(IItemHasSplitTagList.TAG_SPLIT).isEmpty()){
+            if(tag.getBoolean(IItemHasStructureData.TAG_STRUCTURE_DATA_LOADED)){
                 if(tag.getCompound(IItemHasSpaceInfoTag.TAG_POINT_SCHEDULED).isEmpty()) return new RodStateSettingScheduledPos();
                 return new RodStateRecollection();
             }
@@ -123,6 +124,7 @@ public class RodRecollectionHelper {
         tag.remove(RodRecollectionItem.TAG_POINT_END);
         tag.remove(RodRecollectionItem.TAG_POINT_SCHEDULED);
         tag.remove(RodRecollectionItem.TAG_POINT_SCHEDULED_FACING);
+        StructureDataProperty.of(stack).ifPresent(p -> p.bindStuctureData(null));
     }
 
     @Nullable
