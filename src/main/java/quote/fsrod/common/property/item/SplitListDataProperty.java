@@ -51,7 +51,10 @@ public class SplitListDataProperty implements ISplitListDataProperty, ICapabilit
 
     @Override
     public CompoundTag getTag(UUID uuid) {
-        return splitTagMap.getOrDefault(uuid, new CompoundTag());
+        if (!splitTagMap.containsKey(uuid)){
+            splitTagMap.put(uuid, new CompoundTag());
+        }
+        return splitTagMap.get(uuid);
     }
 
     @Override
