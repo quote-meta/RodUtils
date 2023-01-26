@@ -18,6 +18,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.client.event.InputEvent.MouseScrollEvent;
+import quote.fsrod.client.core.render.RecollectionSpaceRenderer;
 import quote.fsrod.client.core.utils.RenderUtils;
 import quote.fsrod.common.core.helper.rod.state.IRodState;
 import quote.fsrod.common.core.helper.rod.state.RodStateLoadSpace;
@@ -155,6 +156,14 @@ public class RodRecollectionHelper {
                     BlockPos blockDiff = RodRecollectionHelper.getBlockPosData(stackMainHand);
                     if(blockDiff != null){
                         Direction direction = IItemHasSpaceInfoTag.getFacingScheduled(stackMainHand).orElse(Direction.NORTH);
+
+                        // render space
+                        StructureDataProperty.of(stackMainHand).ifPresent(property -> {
+                            property.getStructureData().ifPresent(structure ->{
+                                RecollectionSpaceRenderer.renderSpace(player.level, structure, direction, blockPosScheduled, event);
+                            });
+                        });
+
                         AABB aabbDst = SpaceReader.getScheduledAABB(blockPosScheduled, blockDiff, direction);
                         RenderUtils.renderFakeFrameFX(aabbDst, event.getPoseStack(), r, g, b, a);
                         RenderUtils.renderFakeBlockFX(blockPosScheduled, event.getPoseStack(), r, g, b, a);
