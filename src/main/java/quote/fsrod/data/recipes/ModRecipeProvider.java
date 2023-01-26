@@ -8,10 +8,10 @@ import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.Tags.Items;
 import quote.fsrod.common.item.ModItems;
 import quote.fsrod.common.lib.LibMisc;
 
@@ -30,7 +30,7 @@ public class ModRecipeProvider extends RecipeProvider{
             .pattern(" DE")
             .pattern("PGD")
             .pattern("GP ")
-            .define('P', Ingredient.of(Items.ENDER_PEARLS))
+            .define('P', Ingredient.of(Items.ENDER_PEARL))
             .define('D', Ingredient.of(Tags.Items.GEMS_DIAMOND))
             .define('G', Ingredient.of(Tags.Items.INGOTS_GOLD))
             .define('E', Ingredient.of(Tags.Items.GEMS_EMERALD))
@@ -41,7 +41,7 @@ public class ModRecipeProvider extends RecipeProvider{
             .pattern(" ED")
             .pattern("PGE")
             .pattern("GP ")
-            .define('P', Ingredient.of(Items.ENDER_PEARLS))
+            .define('P', Ingredient.of(Items.ENDER_PEARL))
             .define('D', Ingredient.of(Tags.Items.GEMS_DIAMOND))
             .define('G', Ingredient.of(Tags.Items.INGOTS_GOLD))
             .define('E', Ingredient.of(Tags.Items.GEMS_EMERALD))
@@ -62,7 +62,7 @@ public class ModRecipeProvider extends RecipeProvider{
             .pattern(" DE")
             .pattern("PTD")
             .pattern("CP ")
-            .define('P', Ingredient.of(Items.ENDER_PEARLS))
+            .define('P', Ingredient.of(Items.ENDER_PEARL))
             .define('D', Ingredient.of(Tags.Items.GEMS_DIAMOND))
             .define('T', Ingredient.of(ModItems.rodTransfer))
             .define('C', Ingredient.of(ModItems.rodClone))
@@ -74,7 +74,7 @@ public class ModRecipeProvider extends RecipeProvider{
             .pattern(" DE")
             .pattern("PCD")
             .pattern("TP ")
-            .define('P', Ingredient.of(Items.ENDER_PEARLS))
+            .define('P', Ingredient.of(Items.ENDER_PEARL))
             .define('D', Ingredient.of(Tags.Items.GEMS_DIAMOND))
             .define('T', Ingredient.of(ModItems.rodTransfer))
             .define('C', Ingredient.of(ModItems.rodClone))
@@ -86,11 +86,11 @@ public class ModRecipeProvider extends RecipeProvider{
             .pattern(" DS")
             .pattern("PGD")
             .pattern("GP ")
-            .define('P', Ingredient.of(Items.ENDER_PEARLS))
+            .define('P', Ingredient.of(Items.ENDER_PEARL))
             .define('D', Ingredient.of(Tags.Items.GEMS_DIAMOND))
             .define('G', Ingredient.of(Tags.Items.INGOTS_GOLD))
-            .define('S', Ingredient.of(Items.NETHER_STARS))
-            .unlockedBy("has_item", has(Tags.Items.NETHER_STARS))
+            .define('S', Ingredient.of(Items.NETHER_STAR))
+            .unlockedBy("has_item", has(Items.NETHER_STAR))
             .save(comsumer, prefix("rod_recollection"));
 
         ShapedRecipeBuilder.shaped(ModItems.charmUranus)
