@@ -34,6 +34,7 @@ public class ItemModelGenerator extends ItemModelProvider {
         single(ModItems.rodClone);
         single(ModItems.rodTransfer);
         single(ModItems.rodMeasurement);
+        single(ModItems.rodTeleportation);
         single(ModItems.charmUranus);
     }
 

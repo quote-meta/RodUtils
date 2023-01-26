@@ -10,6 +10,7 @@ import quote.fsrod.common.core.helper.rod.RodCloneHelper;
 import quote.fsrod.common.core.helper.rod.RodRecollectionHelper;
 import quote.fsrod.common.item.rod.RodCloneItem;
 import quote.fsrod.common.item.rod.RodRecollectionItem;
+import quote.fsrod.common.item.rod.RodTeleportationItem;
 import quote.fsrod.common.item.rod.RodTransferItem;
 
 public class InputEventHandler {
@@ -28,6 +29,9 @@ public class InputEventHandler {
         }
         if(player.level.isClientSide && (RodRecollectionItem.isItemOf(stackMainHand))){
             RodRecollectionHelper.onMouseScrollEvent(event, stackMainHand, player);
+        }
+        if(player.level.isClientSide && (RodTeleportationItem.isItemOf(stackMainHand))){
+            RodTeleportationItem.onMouseScrollEvent(event, stackMainHand, player);
         }
     }
 }

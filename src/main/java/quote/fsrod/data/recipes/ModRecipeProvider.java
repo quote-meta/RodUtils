@@ -93,6 +93,17 @@ public class ModRecipeProvider extends RecipeProvider{
             .unlockedBy("has_item", has(Items.NETHER_STAR))
             .save(comsumer, prefix("rod_recollection"));
 
+        ShapedRecipeBuilder.shaped(ModItems.rodTeleportation)
+            .pattern(" DE")
+            .pattern("PGD")
+            .pattern("GP ")
+            .define('P', Ingredient.of(Items.ENDER_PEARL))
+            .define('D', Ingredient.of(Tags.Items.GEMS_DIAMOND))
+            .define('G', Ingredient.of(Tags.Items.INGOTS_GOLD))
+            .define('E', Ingredient.of(Items.ELYTRA))
+            .unlockedBy("has_item", has(Items.ELYTRA))
+            .save(comsumer, prefix("rod_teleportation"));
+
         ShapedRecipeBuilder.shaped(ModItems.charmUranus)
             .pattern("NDN")
             .pattern("FBF")

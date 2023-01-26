@@ -10,6 +10,7 @@ import net.minecraftforge.registries.IForgeRegistry;
 import quote.fsrod.common.item.rod.RodCloneItem;
 import quote.fsrod.common.item.rod.RodMeasurementItem;
 import quote.fsrod.common.item.rod.RodRecollectionItem;
+import quote.fsrod.common.item.rod.RodTeleportationItem;
 import quote.fsrod.common.item.rod.RodTransferItem;
 import quote.fsrod.common.item.utils.ModRarities;
 import quote.fsrod.common.lib.LibItemName;
@@ -22,6 +23,7 @@ public class ModItems {
     public static Item rodTransfer;
     public static Item rodRecollection;
     public static Item rodMeasurement;
+    public static Item rodTeleportation;
 
     public static Item charmUranus;
 
@@ -35,6 +37,7 @@ public class ModItems {
         rodTransfer = new RodTransferItem(unstackable().rarity(Rarity.EPIC));
         rodRecollection = new RodRecollectionItem(unstackable().rarity(ModRarities.LEGENDARY));
         rodMeasurement = new RodMeasurementItem(unstackable().rarity(Rarity.EPIC));
+        rodTeleportation = new RodTeleportationItem(unstackable().rarity(Rarity.EPIC));
         
         charmUranus = new CharmUranusItem(unstackable().rarity(ModRarities.LEGENDARY));
 
@@ -42,6 +45,7 @@ public class ModItems {
         register(LibItemName.ROD_TRANSFER, rodTransfer);
         register(LibItemName.ROD_MEASUREMENT, rodMeasurement);
         register(LibItemName.ROD_RECOLLECTION, rodRecollection);
+        register(LibItemName.ROD_TELEPORTATION, rodTeleportation);
 
         register(LibItemName.CHARM_URANUS, charmUranus);
     }

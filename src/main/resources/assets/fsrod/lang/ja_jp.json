@@ -14,6 +14,7 @@
     "item.fsrod.rod_clone":"コピペの杖",
     "item.fsrod.rod_transfer":"引っ越しの杖",
     "item.fsrod.rod_measurement":"測定の杖",
+    "item.fsrod.rod_teleportation":"瞬間移動の杖",
     "item.fsrod.rod_recollection":"追憶の杖",
     
     "item.fsrod.charm_uranus":"天空神のチャーム",
@@ -21,6 +22,10 @@
     "item.fsrod.rod_recollection.info":"知らない景色が脳裏に浮かび、何故か懐かしい気持ちになる",
     "item.fsrod.rod_recollection.info.nofilename":"§a手に持って何かを呟かなければ・・・",
     "item.fsrod.rod_recollection.info.filename":"%1$sに紐づけられている",
+    "item.fsrod.rod_teleportation.info.1":"§f: ブリンク距離: %1$s",
+    "item.fsrod.rod_teleportation.info.2":"右ホールド: 長距離テレポート",
+    "item.fsrod.rod_teleportation.info.3":"Shift + 右クリック: ブリンク",
+    "item.fsrod.rod_teleportation.info.4":"Shift + ホイール: ブリンク距離変更",
 
     "message.fsrod.rod_clone.use.reset":"対象範囲をリセットしました",
     "message.fsrod.rod_clone.warning.ranges_interfere":"2つの範囲が被っています",
