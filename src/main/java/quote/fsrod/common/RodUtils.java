@@ -21,6 +21,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import quote.fsrod.common.core.handler.ConfigHandler;
 import quote.fsrod.common.core.handler.ItemStackCapabilityHandler;
 import quote.fsrod.common.core.handler.PlayerHandler;
+import quote.fsrod.common.core.handler.TickHandler;
 import quote.fsrod.common.core.network.ModPacketHandler;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -39,6 +40,7 @@ public class RodUtils {
 
     private void setupCommon(final FMLCommonSetupEvent event) {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigHandler.COMMON_SPEC);
+        MinecraftForge.EVENT_BUS.register(new TickHandler());
         MinecraftForge.EVENT_BUS.register(new PlayerHandler());
         MinecraftForge.EVENT_BUS.register(new ItemStackCapabilityHandler());
         ModPacketHandler.init();

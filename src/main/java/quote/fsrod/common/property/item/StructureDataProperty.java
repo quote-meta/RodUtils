@@ -1,6 +1,10 @@
 package quote.fsrod.common.property.item;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -15,6 +19,7 @@ import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import quote.fsrod.common.item.utils.IItemHasStructureData;
+import quote.fsrod.common.item.utils.IItemHasUUID;
 import quote.fsrod.common.lib.LibMisc;
 import quote.fsrod.common.lib.LibProperty;
 import quote.fsrod.common.structure.BasicStructure;
@@ -26,13 +31,57 @@ public class StructureDataProperty implements IStructureDataProperty, ICapabilit
     private static Capability<IStructureDataProperty> INSTANCE = CapabilityManager.get(new CapabilityToken<>(){});
 
     //
+    // ================== Permanent Storage =======================
+    // It is permanent on refreshing ItemStack Capability
+    // delete on Save & Load
+    // delete on storage unused long ticks
+    //
+
+    private static class PermanentStorage{
+        private BasicStructure structureData;
+        private CompoundTag tag;
+        private final int lifeTimeMax = 100;
+        private int lifeTime = lifeTimeMax;
+        private final UUID uuid;
+        private PermanentStorage(UUID uuid){
+            this.uuid = uuid;
+        }
+    }
+
+    private static final Map<UUID, PermanentStorage> permanentMap = new HashMap<>();
+    
+    private static PermanentStorage getOrCreateStorage(UUID uuid){
+        PermanentStorage storage = permanentMap.computeIfAbsent(uuid, u -> new PermanentStorage(uuid));
+        storage.lifeTime = storage.lifeTimeMax;
+        return storage;
+    }
+
+    public static void removeUnusedStorage(){
+        permanentMap.values().stream()
+        .forEach(s -> {
+            s.lifeTime--;
+        });
+
+        List<UUID> removeUUIDs = permanentMap.values().stream()
+        .filter(s -> {
+            return s.lifeTime <= 0;
+        })
+        .map(s -> {
+            return s.uuid;
+        })
+        .toList();
+
+        removeUUIDs.forEach(u -> {
+            permanentMap.remove(u);
+        });
+    }
+
+    //
     // ================== Parameters =======================
     //
 
     private final ItemStack itemStack;
-    private BasicStructure structureData;
-
-    private CompoundTag tag;
+    private UUID uuid;
 
     //
     // ================== Utility ==========================
@@ -54,12 +103,12 @@ public class StructureDataProperty implements IStructureDataProperty, ICapabilit
 
     @Override
     public CompoundTag getTag() {
-        return tag;
+        return getOrCreateStorage(uuid).tag;
     }
 
     @Override
     public Optional<BasicStructure> getStructureData() {
-        return Optional.ofNullable(structureData);
+        return Optional.ofNullable(getOrCreateStorage(uuid).structureData);
     }
 
     //
@@ -70,19 +119,19 @@ public class StructureDataProperty implements IStructureDataProperty, ICapabilit
     public void completeMergingStructureData(ListTag mergedTagList) {
         CompoundTag tagStuctureData = this.itemStack.getOrCreateTag().getCompound(IItemHasStructureData.TAG_STRUCTURE_DATA).copy();
         tagStuctureData.put(BasicStructure.TAG_DATA_STATE_NUMS, mergedTagList);
-        structureData = new BasicStructure(tagStuctureData);
+        BasicStructure structureData = new BasicStructure(tagStuctureData);
 
         bindStuctureData(structureData);
     }
 
     @Override
     public void bindStuctureData(BasicStructure structureData) {
-        this.structureData = structureData;
+        getOrCreateStorage(uuid).structureData = structureData;
     }
 
     public StructureDataProperty(ItemStack itemStack){
         this.itemStack = itemStack;
-        this.tag = new CompoundTag();
+        this.uuid = IItemHasUUID.getUUID(itemStack);
     }
 
     public void init(){
@@ -99,11 +148,15 @@ public class StructureDataProperty implements IStructureDataProperty, ICapabilit
 
     @Override
     public Tag serializeNBT() {
-        return new CompoundTag();
+        CompoundTag tag = new CompoundTag();
+        tag.putUUID("uuid", uuid);
+        return tag;
     }
 
     @Override
     public void deserializeNBT(Tag nbt) {
-        
+        if(nbt instanceof CompoundTag){
+            this.uuid = ((CompoundTag)nbt).getUUID("uuid");
+        }
     }
 }
