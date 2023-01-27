@@ -26,6 +26,10 @@
     "item.fsrod.rod_teleportation.info.2":"右ホールド: 長距離テレポート",
     "item.fsrod.rod_teleportation.info.3":"Shift + 右クリック: ブリンク",
     "item.fsrod.rod_teleportation.info.4":"Shift + ホイール: ブリンク距離変更",
+    "item.fsrod.charm_uranus.info.1":"§f常時飛行: %1$s",
+    "item.fsrod.charm_uranus.info.2":"§f飛行速度: %1$s",
+    "item.fsrod.charm_uranus.info.3":"右クリックで常時飛行を切り替え",
+    "item.fsrod.charm_uranus.info.4":"Shift + ホイールで飛行速度変更",
 
     "message.fsrod.rod_clone.use.reset":"対象範囲をリセットしました",
     "message.fsrod.rod_clone.warning.ranges_interfere":"2つの範囲が被っています",

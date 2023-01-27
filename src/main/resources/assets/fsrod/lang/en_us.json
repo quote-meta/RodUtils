@@ -26,6 +26,10 @@
     "item.fsrod.rod_teleportation.info.2":"Right Hold: Charge & Long Teleportation",
     "item.fsrod.rod_teleportation.info.3":"Shift Right Press: Short Blink",
     "item.fsrod.rod_teleportation.info.4":"Shift + Wheel up/down: increase/decrese blink direction",
+    "item.fsrod.charm_uranus.info.1":"§fAlways Flight: %1$s",
+    "item.fsrod.charm_uranus.info.2":"§fFlight Speed: %1$s",
+    "item.fsrod.charm_uranus.info.3":"Right Press to change Always Flight mode",
+    "item.fsrod.charm_uranus.info.4":"Shift + Wheel up/down to increase/decrese speed",
 
     "message.fsrod.rod_clone.use.reset":"Reset the source range",
     "message.fsrod.rod_clone.warning.ranges_interfere":"The Two ranges interfere",
